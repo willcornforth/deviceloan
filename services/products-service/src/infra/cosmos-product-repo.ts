@@ -62,6 +62,14 @@ export class CosmosProductRepo implements ProductRepo {
 		}
 	}
 
+	async list(): Promise<readonly Product[]> {
+		const { resources } = await this.container.items
+			.readAll<ProductDocument>()
+			.fetchAll();
+
+		return resources.map(doc => this.toDomain(doc));
+	}
+
 	// Mapping functions - convert between domain and DTO
 	private toDocument(product: Product): ProductDocument {
 		return {

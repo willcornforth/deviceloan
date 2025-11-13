@@ -9,14 +9,13 @@
     "clean": "rimraf dist",
     "prestart": "npm run clean && npm run build",
     "start": "func start",
-    "seed": "npm run build && node dist/src/seed/run-seed.js",
+    "seed": "npm run build && node -r ./scripts/load-settings.js dist/src/seed/run-seed.js",
     "test": "echo \"No tests yet...\""
   },
   "dependencies": {
     "@azure/cosmos": "^4.7.0",
     "@azure/functions": "^4.0.0",
-    "@azure/identity": "^4.13.0",
-    "dotenv": "^17.2.3"
+    "@azure/identity": "^4.13.0"
   },
   "devDependencies": {
     "@types/node": "18.x",
