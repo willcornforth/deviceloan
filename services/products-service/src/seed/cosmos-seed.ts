@@ -1,54 +1,55 @@
 // Cosmos DB seed utility for development
 
+import { randomUUID } from 'crypto';
 import { createProduct } from '../domain/product';
 import { ProductRepo } from '../domain/product-repo';
 
 // Sample seed data
 const seedData = [
 	{
-		id: 'laptop-001',
+		id: randomUUID(),
 		name: 'MacBook Pro 16"',
 		description: 'High-performance laptop for development work',
 		category: 'laptop' as const,
 		stockQuantity: 5,
 	},
 	{
-		id: 'laptop-002',
+		id: randomUUID(),
 		name: 'Dell XPS 15',
 		description: 'Premium Windows laptop for enterprise use',
 		category: 'laptop' as const,
 		stockQuantity: 3,
 	},
 	{
-		id: 'phone-001',
+		id: randomUUID(),
 		name: 'iPhone 15 Pro',
 		description: 'Latest iPhone for mobile testing',
 		category: 'phone' as const,
 		stockQuantity: 8,
 	},
 	{
-		id: 'phone-002',
+		id: randomUUID(),
 		name: 'Samsung Galaxy S24',
 		description: 'Android flagship device',
 		category: 'phone' as const,
 		stockQuantity: 6,
 	},
 	{
-		id: 'tablet-001',
+		id: randomUUID(),
 		name: 'iPad Pro 12.9"',
 		description: 'Large tablet for design and testing',
 		category: 'tablet' as const,
 		stockQuantity: 4,
 	},
 	{
-		id: 'monitor-001',
+		id: randomUUID(),
 		name: 'Dell UltraSharp 27"',
 		description: '4K monitor for workstation setup',
 		category: 'monitor' as const,
 		stockQuantity: 10,
 	},
 	{
-		id: 'accessory-001',
+		id: randomUUID(),
 		name: 'USB-C Hub',
 		description: 'Multi-port adapter for connectivity',
 		category: 'accessory' as const,
