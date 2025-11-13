@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // Script to run the database seed
 
+import 'dotenv/config';
 import { getProductRepo } from '../config/appServices';
 import { seedCosmosDb } from './cosmos-seed';
 
