@@ -1,18 +1,27 @@
 {
-  "name": "",
+  "name": "deviceloan-loans-service",
   "version": "1.0.0",
-  "description": "",
-  "main": "src/functions/*.js",
+  "description": "Device Loan Service",
+  "main": "dist/src/functions/*.js",
   "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "clean": "rimraf dist",
+    "prestart": "npm run build",
     "start": "func start",
-    "test": "echo \"No tests yet...\""
+    "test": "echo \"No tests yet...\"",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\""
   },
   "dependencies": {
     "@azure/cosmos": "^4.8.0",
-    "@azure/functions": "^4.0.0",
-    "prettier": "^3.6.2"
+    "@azure/functions": "^4.0.0"
   },
   "devDependencies": {
-    "azure-functions-core-tools": "^4.x"
+    "@types/node": "^20.x",
+    "azure-functions-core-tools": "^4.x",
+    "prettier": "^3.6.2",
+    "rimraf": "^6.0.1",
+    "typescript": "^5.6.3"
   }
 }
