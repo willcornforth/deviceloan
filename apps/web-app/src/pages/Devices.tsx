@@ -8,57 +8,69 @@ import PageBanner from "../components/PageBanner";
 import SearchBar from "../components/SearchBar";
 import CategoryFilter, { Category } from "../components/CategoryFilter";
 import DeviceCard from "../components/DeviceCard";
-import { Device } from "../domain/Device";
+import { Product } from "../domain/products";
 
 function Devices() {
-  const [devices] = useState<Device[]>([
+  const [devices] = useState<Product[]>([
     {
-      id: 1,
+      id: "1",
       name: 'MacBook Pro 16"',
-      category: "Laptop",
-      status: "Available",
-      specs: "M2 Pro, 16GB RAM",
+      serialNumber: "MBP-2024-001",
+      description: "M2 Pro, 16GB RAM",
+      category: "laptop",
+      status: "available",
       image: "https://placehold.co/400x300/e0e7ff/4f46e5?text=MacBook+Pro",
+      createdAt: new Date("2024-01-15"),
     },
     {
-      id: 2,
+      id: "2",
       name: 'iPad Pro 12.9"',
-      category: "Tablet",
-      status: "Available",
-      specs: "M2, 256GB",
+      serialNumber: "IPD-2024-002",
+      description: "M2, 256GB",
+      category: "tablet",
+      status: "available",
       image: "https://placehold.co/400x300/e0e7ff/4f46e5?text=iPad+Pro",
+      createdAt: new Date("2024-02-20"),
     },
     {
-      id: 3,
+      id: "3",
       name: "iPhone 15 Pro",
-      category: "Phone",
-      status: "On Loan",
-      specs: "256GB, Titanium",
+      serialNumber: "IPH-2024-003",
+      description: "256GB, Titanium",
+      category: "phone",
+      status: "on-loan",
       image: "https://placehold.co/400x300/e0e7ff/4f46e5?text=iPhone+15",
+      createdAt: new Date("2024-03-10"),
     },
     {
-      id: 4,
+      id: "4",
       name: "Dell XPS 15",
-      category: "Laptop",
-      status: "Available",
-      specs: "i7, 32GB RAM",
+      serialNumber: "DXS-2024-004",
+      description: "i7, 32GB RAM",
+      category: "laptop",
+      status: "available",
       image: "https://placehold.co/400x300/e0e7ff/4f46e5?text=Dell+XPS",
+      createdAt: new Date("2024-01-25"),
     },
     {
-      id: 5,
+      id: "5",
       name: "Surface Pro 9",
-      category: "Tablet",
-      status: "Available",
-      specs: "i5, 16GB RAM",
+      serialNumber: "SFP-2024-005",
+      description: "i5, 16GB RAM",
+      category: "tablet",
+      status: "available",
       image: "https://placehold.co/400x300/e0e7ff/4f46e5?text=Surface+Pro",
+      createdAt: new Date("2024-04-05"),
     },
     {
-      id: 6,
+      id: "6",
       name: "Samsung Galaxy Tab",
-      category: "Tablet",
-      status: "Available",
-      specs: "Snapdragon, 8GB",
+      serialNumber: "SGT-2024-006",
+      description: "Snapdragon, 8GB",
+      category: "tablet",
+      status: "available",
       image: "https://placehold.co/400x300/e0e7ff/4f46e5?text=Galaxy+Tab",
+      createdAt: new Date("2024-05-12"),
     },
   ]);
 
@@ -76,9 +88,11 @@ function Devices() {
     return devices.filter((device) => {
       const matchesSearch =
         device.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        device.specs.toLowerCase().includes(searchQuery.toLowerCase());
+        device.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        device.serialNumber.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesCategory =
-        selectedCategory === "All" || device.category === selectedCategory;
+        selectedCategory === "All" ||
+        device.category.toLowerCase() === selectedCategory.toLowerCase();
       return matchesSearch && matchesCategory;
     });
   }, [devices, searchQuery, selectedCategory]);
@@ -117,15 +131,30 @@ function Devices() {
             {filteredDevices.map((device) => (
               <DeviceCard
                 key={device.id}
-                image={device.image}
-                name={device.name}
-                category={device.category}
-                status={device.status}
-                specs={device.specs}
-                buttonText={
-                  device.status === "Available" ? "Loan Device" : "Unavailable"
+                image={
+                  device.image ||
+                  `https://placehold.co/400x300/e0e7ff/4f46e5?text=${encodeURIComponent(
+                    device.name
+                  )}`
                 }
-                buttonDisabled={device.status !== "Available"}
+                name={device.name}
+                category={
+                  device.category.charAt(0).toUpperCase() +
+                  device.category.slice(1)
+                }
+                status={
+                  device.status === "available"
+                    ? "Available"
+                    : device.status === "on-loan"
+                    ? "On Loan"
+                    : device.status.charAt(0).toUpperCase() +
+                      device.status.slice(1)
+                }
+                specs={device.description}
+                buttonText={
+                  device.status === "available" ? "Loan Device" : "Unavailable"
+                }
+                buttonDisabled={device.status !== "available"}
               />
             ))}
           </div>

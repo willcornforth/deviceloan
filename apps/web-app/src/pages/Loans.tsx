@@ -2,7 +2,7 @@ import { useState } from 'react';
 import PageBanner from '../components/PageBanner';
 import TabSwitch from '../components/TabSwitch';
 import LoanCard from '../components/LoanCard';
-import { Loan } from '../domain/Loan';
+import { Loan } from '../domain/loans';
 
 type TabType = 'active' | 'history';
 

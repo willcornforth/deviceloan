@@ -7,13 +7,21 @@ export type ProductCategory =
 	| 'monitor'
 	| 'accessory';
 
-export type Product {
-	readonly id: ProductId;
-	readonly name: string;
-	readonly description: string;
-	readonly category: ProductCategory;
-	readonly stockQuantity: number;
-	readonly createdAt: Date;
+export type ProductStatus =
+	| 'available'
+	| 'on-loan'
+	| 'maintenance'
+	| 'retired';
+
+export type Product = {
+  readonly id: ProductId;
+  readonly name: string;
+  readonly serialNumber: string;
+  readonly description: string;
+  readonly category: ProductCategory;
+  readonly status: ProductStatus;
+  readonly image?: string;
+  readonly createdAt: Date;
 }
 
 export type ListProductOutput = {
