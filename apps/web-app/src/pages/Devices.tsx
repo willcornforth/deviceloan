@@ -8,71 +8,10 @@ import PageBanner from "../components/PageBanner";
 import SearchBar from "../components/SearchBar";
 import CategoryFilter, { Category } from "../components/CategoryFilter";
 import DeviceCard from "../components/DeviceCard";
-import { Product } from "../domain/products";
+import { useProducts } from "../hooks/useProducts";
 
 function Devices() {
-  const [devices] = useState<Product[]>([
-    {
-      id: "1",
-      name: 'MacBook Pro 16"',
-      serialNumber: "MBP-2024-001",
-      description: "M2 Pro, 16GB RAM",
-      category: "laptop",
-      status: "available",
-      image: "https://placehold.co/400x300/e0e7ff/4f46e5?text=MacBook+Pro",
-      createdAt: new Date("2024-01-15"),
-    },
-    {
-      id: "2",
-      name: 'iPad Pro 12.9"',
-      serialNumber: "IPD-2024-002",
-      description: "M2, 256GB",
-      category: "tablet",
-      status: "available",
-      image: "https://placehold.co/400x300/e0e7ff/4f46e5?text=iPad+Pro",
-      createdAt: new Date("2024-02-20"),
-    },
-    {
-      id: "3",
-      name: "iPhone 15 Pro",
-      serialNumber: "IPH-2024-003",
-      description: "256GB, Titanium",
-      category: "phone",
-      status: "on-loan",
-      image: "https://placehold.co/400x300/e0e7ff/4f46e5?text=iPhone+15",
-      createdAt: new Date("2024-03-10"),
-    },
-    {
-      id: "4",
-      name: "Dell XPS 15",
-      serialNumber: "DXS-2024-004",
-      description: "i7, 32GB RAM",
-      category: "laptop",
-      status: "available",
-      image: "https://placehold.co/400x300/e0e7ff/4f46e5?text=Dell+XPS",
-      createdAt: new Date("2024-01-25"),
-    },
-    {
-      id: "5",
-      name: "Surface Pro 9",
-      serialNumber: "SFP-2024-005",
-      description: "i5, 16GB RAM",
-      category: "tablet",
-      status: "available",
-      image: "https://placehold.co/400x300/e0e7ff/4f46e5?text=Surface+Pro",
-      createdAt: new Date("2024-04-05"),
-    },
-    {
-      id: "6",
-      name: "Samsung Galaxy Tab",
-      serialNumber: "SGT-2024-006",
-      description: "Snapdragon, 8GB",
-      category: "tablet",
-      status: "available",
-      image: "https://placehold.co/400x300/e0e7ff/4f46e5?text=Galaxy+Tab",
-      createdAt: new Date("2024-05-12"),
-    },
-  ]);
+  const { products: devices, loading, error } = useProducts();
 
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
@@ -96,6 +35,22 @@ function Devices() {
       return matchesSearch && matchesCategory;
     });
   }, [devices, searchQuery, selectedCategory]);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex justify-center items-center min-h-screen text-red-600">
+        Error loading devices: {error.message}
+      </div>
+    );
+  }
 
   return (
     <div>
