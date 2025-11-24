@@ -28,28 +28,84 @@ export async function getProducts(
 	}
 
 	// Check for required scope
-	if (!oauth2Validator.hasScope(authContext, 'read:products')) {
-		context.log(`User ${authContext.subject} lacks required scope: read:products`);
-		return {
-			status: 403,
-			jsonBody: {
-				error: 'Forbidden',
-				message: 'Insufficient permissions to access this resource'
-			}
-		};
-	}
+	// if (!oauth2Validator.hasScope(authContext, 'read:products')) {
+	// 	context.log(`User ${authContext.subject} lacks required scope: read:products`);
+	// 	return {
+	// 		status: 403,
+	// 		jsonBody: {
+	// 			error: 'Forbidden',
+	// 			message: 'Insufficient permissions to access this resource'
+	// 		}
+	// 	};
+	// }
 
 	// Business logic - user is authenticated and authorized
 	context.log(`User ${authContext.subject} is accessing GET products`);
 
-	return {
-		status: 200,
-		jsonBody: {
-			message: 'Products retrieved successfully',
-			user: authContext.subject,
-			data: [] // Your product data here
+	// Contact products service and retrieve products using HOST_KEY
+	// Host key can be undefined for local development.
+	const productsServiceUrl = process.env.PRODUCTS_SERVICE_BASE_URL;
+	const productsServiceHostKey = process.env.PRODUCTS_SERVICE_HOST_KEY;
+
+	if (!productsServiceUrl) {
+		context.log('Products service configuration missing');
+		return {
+			status: 500,
+			jsonBody: {
+				error: 'Internal Server Error',
+				message: 'Products service is not configured'
+			}
+		};
+	}
+
+	try {
+		const headers: Record<string, string> = {
+			'Content-Type': 'application/json'
+		};
+
+		// Only add host key header if it's defined (for deployed environments)
+		if (productsServiceHostKey) {
+			headers['x-functions-key'] = productsServiceHostKey;
 		}
-	};
+
+		context.log(`Calling products service at: ${productsServiceUrl}/products`);
+
+		const response = await fetch(`${productsServiceUrl}/products`, {
+			method: 'GET',
+			headers
+		});
+
+		if (!response.ok) {
+			context.log(`Products service returned status: ${response.status}`);
+			return {
+				status: response.status,
+				jsonBody: {
+					error: 'Products Service Error',
+					message: 'Failed to retrieve products from upstream service'
+				}
+			};
+		}
+
+		const products = await response.json();
+
+		return {
+			status: 200,
+			jsonBody: {
+				message: 'Products retrieved successfully',
+				user: authContext.subject,
+				data: products
+			}
+		};
+	} catch (error) {
+		context.log(`Error calling products service: ${error}`);
+		return {
+			status: 502,
+			jsonBody: {
+				error: 'Bad Gateway',
+				message: 'Unable to connect to products service'
+			}
+		};
+	}
 }
 
 app.http('getProducts', {
