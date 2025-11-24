@@ -1,7 +1,12 @@
 // Cosmos DB implementation of ProductRepo - infrastructure layer
 
 import { CosmosClient, Container } from '@azure/cosmos';
-import { Product, ProductId, ProductCategory } from '../domain/product';
+import {
+  Product,
+  ProductId,
+  ProductCategory,
+  ProductStatus,
+} from '../domain/product';
 import { ProductRepo } from '../domain/product-repo';
 
 // Internal DTO type for Cosmos DB container shape
@@ -11,6 +16,8 @@ interface ProductDocument {
   description: string;
   category: string;
   serialNumber: string;
+  status: string;
+  image?: string;
   createdAt: string;
   _ts?: number;
   _etag?: string;
@@ -71,7 +78,7 @@ export class CosmosProductRepo implements ProductRepo {
 
     return availableOnly
       ? resources
-          .filter((doc) => doc.isLoanedOut === false)
+          .filter((doc) => doc.status === 'available')
           .map((doc) => this.toDomain(doc))
       : resources.map((doc) => this.toDomain(doc));
   }
@@ -84,6 +91,8 @@ export class CosmosProductRepo implements ProductRepo {
       description: product.description,
       category: product.category,
       serialNumber: product.serialNumber,
+      status: product.status,
+      image: product.image,
       createdAt: product.createdAt.toISOString(),
     };
   }
@@ -95,6 +104,8 @@ export class CosmosProductRepo implements ProductRepo {
       description: document.description,
       category: document.category as ProductCategory,
       serialNumber: document.serialNumber,
+      status: document.status as ProductStatus,
+      image: document.image,
       createdAt: new Date(document.createdAt),
     };
   }

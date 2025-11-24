@@ -9,13 +9,16 @@ export type ProductCategory =
   | 'monitor'
   | 'accessory';
 
+export type ProductStatus = 'available' | 'on-loan' | 'maintenance' | 'retired';
+
 export interface Product {
   readonly id: ProductId;
   readonly name: string;
   readonly serialNumber: string;
   readonly description: string;
   readonly category: ProductCategory;
-  readonly isLoanedOut: boolean;
+  readonly status: ProductStatus;
+  readonly image?: string;
   readonly createdAt: Date;
 }
 
@@ -25,7 +28,8 @@ export interface CreateProductParams {
   readonly serialNumber: string;
   readonly description: string;
   readonly category: ProductCategory;
-  readonly isLoanedOut?: boolean;
+  readonly status?: ProductStatus;
+  readonly image?: string;
 }
 
 export interface ValidationError {
@@ -103,7 +107,8 @@ export const createProduct = (params: CreateProductParams): ProductResult => {
     serialNumber: params.serialNumber.trim(),
     description: params.description.trim(),
     category: params.category,
-    isLoanedOut: params.isLoanedOut ?? false,
+    status: params.status ?? 'available',
+    image: params.image,
     createdAt: new Date(),
   };
 
@@ -112,16 +117,16 @@ export const createProduct = (params: CreateProductParams): ProductResult => {
 
 // Pure utility functions
 export const isProductAvailable = (product: Product): boolean =>
-  !product.isLoanedOut;
+  product.status === 'available';
 
 export const loanOutProduct = (product: Product): Product => ({
   ...product,
-  isLoanedOut: true,
+  status: 'on-loan',
 });
 
 export const returnProduct = (product: Product): Product => ({
   ...product,
-  isLoanedOut: false,
+  status: 'available',
 });
 
 export const updateProductDescription = (

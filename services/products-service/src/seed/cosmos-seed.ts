@@ -12,7 +12,8 @@ const seedData = [
     serialNumber: 'MBP-2024-001',
     description: 'High-performance laptop for development work',
     category: 'laptop' as const,
-    isLoanedOut: true,
+    status: 'on-loan' as const,
+    image: 'https://placehold.co/400x300/333/fff?text=MacBook+Pro',
   },
   {
     id: randomUUID(),
@@ -20,7 +21,8 @@ const seedData = [
     serialNumber: 'DELL-XPS-002',
     description: 'Premium Windows laptop for enterprise use',
     category: 'laptop' as const,
-    isLoanedOut: false,
+    status: 'available' as const,
+    image: 'https://placehold.co/400x300/0078D4/fff?text=Dell+XPS+15',
   },
   {
     id: randomUUID(),
@@ -28,7 +30,8 @@ const seedData = [
     serialNumber: 'IPHONE-15P-003',
     description: 'Latest iPhone for mobile testing',
     category: 'phone' as const,
-    isLoanedOut: false,
+    status: 'available' as const,
+    image: 'https://placehold.co/400x300/000/fff?text=iPhone+15+Pro',
   },
   {
     id: randomUUID(),
@@ -36,7 +39,8 @@ const seedData = [
     serialNumber: 'SAM-S24-004',
     description: 'Android flagship device',
     category: 'phone' as const,
-    isLoanedOut: true,
+    status: 'on-loan' as const,
+    image: 'https://placehold.co/400x300/1428A0/fff?text=Galaxy+S24',
   },
   {
     id: randomUUID(),
@@ -44,7 +48,8 @@ const seedData = [
     serialNumber: 'IPAD-PRO-005',
     description: 'Large tablet for design and testing',
     category: 'tablet' as const,
-    isLoanedOut: false,
+    status: 'available' as const,
+    image: 'https://placehold.co/400x300/555/fff?text=iPad+Pro',
   },
   {
     id: randomUUID(),
@@ -52,7 +57,8 @@ const seedData = [
     serialNumber: 'MONITOR-DS27-006',
     description: '4K monitor for workstation setup',
     category: 'monitor' as const,
-    isLoanedOut: false,
+    status: 'available' as const,
+    image: 'https://placehold.co/400x300/0078D4/fff?text=Dell+Monitor',
   },
   {
     id: randomUUID(),
@@ -60,7 +66,8 @@ const seedData = [
     serialNumber: 'USBC-HUB-007',
     description: 'Multi-port adapter for connectivity',
     category: 'accessory' as const,
-    isLoanedOut: false,
+    status: 'available' as const,
+    image: 'https://placehold.co/400x300/666/fff?text=USB-C+Hub',
   },
 ];
 
