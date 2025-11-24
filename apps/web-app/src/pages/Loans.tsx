@@ -1,156 +1,133 @@
 import { useState } from 'react';
-import { Tab } from '@headlessui/react';
+import PageBanner from '../components/PageBanner';
+import TabSwitch from '../components/TabSwitch';
+import LoanCard from '../components/LoanCard';
+import { Loan } from '../domain/Loan';
 
-function classNames(...classes) {
-  return classes.filter(Boolean).join(' ');
-}
+type TabType = 'active' | 'history';
 
 function Loans() {
-  const [activeLoans] = useState([
-    { id: 1, device: 'MacBook Pro 16"', loanDate: '2025-11-20', dueDate: '2025-12-04', status: 'Active' },
-    { id: 2, device: 'iPad Pro 12.9"', loanDate: '2025-11-18', dueDate: '2025-12-02', status: 'Active' },
+  const [activeTab, setActiveTab] = useState<TabType>('active');
+  const [activeLoans] = useState<Loan[]>([
+    { 
+      id: 1, 
+      device: 'MacBook Pro 16"', 
+      category: 'Laptop',
+      loanDate: '2025-11-20', 
+      returnDate: '2025-12-04', 
+      status: 'Active',
+      image: 'https://placehold.co/400x300/e0e7ff/4f46e5?text=MacBook+Pro'
+    },
+    { 
+      id: 2, 
+      device: 'iPad Pro 12.9"', 
+      category: 'Tablet',
+      loanDate: '2025-11-18', 
+      returnDate: '2025-12-02', 
+      status: 'Active',
+      image: 'https://placehold.co/400x300/e0e7ff/4f46e5?text=iPad+Pro'
+    },
+    { 
+      id: 3, 
+      device: 'Magic Mouse', 
+      category: 'Accessory',
+      loanDate: '2025-11-15', 
+      returnDate: '2025-11-29', 
+      status: 'Active',
+      image: 'https://placehold.co/400x300/e0e7ff/4f46e5?text=Magic+Mouse'
+    },
+    { 
+      id: 4, 
+      device: 'Dell XPS 15', 
+      category: 'Laptop',
+      loanDate: '2025-11-22', 
+      returnDate: '2025-11-25', 
+      status: 'Overdue',
+      image: 'https://placehold.co/400x300/e0e7ff/4f46e5?text=Dell+XPS'
+    },
   ]);
 
-  const [pastLoans] = useState([
-    { id: 3, device: 'iPhone 15 Pro', loanDate: '2025-10-15', returnDate: '2025-10-29', status: 'Returned' },
-    { id: 4, device: 'Dell XPS 15', loanDate: '2025-09-10', returnDate: '2025-09-24', status: 'Returned' },
+  const [pastLoans] = useState<Loan[]>([
+    { 
+      id: 5, 
+      device: 'iPhone 15 Pro', 
+      category: 'Phone',
+      loanDate: '2025-10-15', 
+      returnDate: '2025-10-29', 
+      status: 'Returned',
+      image: 'https://placehold.co/400x300/e0e7ff/4f46e5?text=iPhone+15'
+    },
+    { 
+      id: 6, 
+      device: 'Surface Pro 9', 
+      category: 'Tablet',
+      loanDate: '2025-09-10', 
+      returnDate: '2025-09-24', 
+      status: 'Returned',
+      image: 'https://placehold.co/400x300/e0e7ff/4f46e5?text=Surface+Pro'
+    },
+    { 
+      id: 7, 
+      device: 'Samsung Galaxy Tab', 
+      category: 'Tablet',
+      loanDate: '2025-08-05', 
+      returnDate: '2025-08-19', 
+      status: 'Returned',
+      image: 'https://placehold.co/400x300/e0e7ff/4f46e5?text=Galaxy+Tab'
+    },
   ]);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">My Loans</h1>
-        <p className="text-gray-600">Track your current and past device loans</p>
-      </div>
+    <div>
+      <PageBanner 
+        title="My Loans" 
+        subtitle="Track your current and past device loans" 
+      />
 
-      <Tab.Group>
-        <Tab.List className="flex space-x-1 rounded-xl bg-gray-100 p-1 mb-6 max-w-md">
-          <Tab
-            className={({ selected }) =>
-              classNames(
-                'w-full rounded-lg py-2.5 text-sm font-medium leading-5 transition-all',
-                'focus:outline-none focus:ring-2 ring-offset-2 ring-offset-gray-100 ring-indigo-400',
-                selected
-                  ? 'bg-white text-indigo-700 shadow'
-                  : 'text-gray-600 hover:bg-white/[0.12] hover:text-gray-900'
-              )
-            }
-          >
-            Active ({activeLoans.length})
-          </Tab>
-          <Tab
-            className={({ selected }) =>
-              classNames(
-                'w-full rounded-lg py-2.5 text-sm font-medium leading-5 transition-all',
-                'focus:outline-none focus:ring-2 ring-offset-2 ring-offset-gray-100 ring-indigo-400',
-                selected
-                  ? 'bg-white text-indigo-700 shadow'
-                  : 'text-gray-600 hover:bg-white/[0.12] hover:text-gray-900'
-              )
-            }
-          >
-            History ({pastLoans.length})
-          </Tab>
-        </Tab.List>
-        <Tab.Panels>
-          <Tab.Panel>
-            <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Device
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Loan Date
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Due Date
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Status
-                      </th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {activeLoans.map((loan) => (
-                      <tr key={loan.id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">{loan.device}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-600">{loan.loanDate}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-600">{loan.dueDate}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                            {loan.status}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
-                          <button className="text-indigo-600 hover:text-indigo-900 font-medium">
-                            Return Device
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <TabSwitch
+          tabs={[
+            { id: 'active', label: 'Active', count: activeLoans.length },
+            { id: 'history', label: 'History', count: pastLoans.length }
+          ]}
+          activeTab={activeTab}
+          onTabChange={(tab) => setActiveTab(tab as TabType)}
+        />
+        <div>
+          {activeTab === 'active' && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {activeLoans.map((loan) => (
+                <LoanCard
+                  key={loan.id}
+                  image={loan.image}
+                  device={loan.device}
+                  category={loan.category}
+                  loanDate={loan.loanDate}
+                  returnDate={loan.returnDate}
+                  status={loan.status}
+                  isActive={true}
+                />
+              ))}
             </div>
-          </Tab.Panel>
-          <Tab.Panel>
-            <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Device
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Loan Date
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Return Date
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Status
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {pastLoans.map((loan) => (
-                      <tr key={loan.id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">{loan.device}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-600">{loan.loanDate}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-600">{loan.returnDate}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                            {loan.status}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+          )}
+          {activeTab === 'history' && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {pastLoans.map((loan) => (
+                <LoanCard
+                  key={loan.id}
+                  image={loan.image}
+                  device={loan.device}
+                  category={loan.category}
+                  loanDate={loan.loanDate}
+                  returnDate={loan.returnDate}
+                  status={loan.status}
+                  isActive={false}
+                />
+              ))}
             </div>
-          </Tab.Panel>
-        </Tab.Panels>
-      </Tab.Group>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
