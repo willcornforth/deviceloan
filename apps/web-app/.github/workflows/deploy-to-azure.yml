@@ -53,7 +53,15 @@ jobs:
           VITE_AUTH0_AUDIENCE: ${{ secrets.VITE_AUTH0_AUDIENCE }}
           VITE_API_GATEWAY_BASE_URL: ${{ secrets.VITE_API_GATEWAY_BASE_URL }}
 
-      # Step 5: Deploy the build output to Azure Blob Storage
+      # Step 5: Clear existing content from Azure Blob Storage
+      # This ensures a clean deployment without leftover files from previous builds
+      - name: Clear existing content from Azure Blob Storage
+        run: |
+          az storage blob delete-batch \
+            --source '$web' \
+            --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}"
+
+      # Step 6: Deploy the build output to Azure Blob Storage
       # The $web container is used for static website hosting in Azure Storage
       # Uses the storage account connection string for authentication
       - name: Deploy to Azure Blob Storage
