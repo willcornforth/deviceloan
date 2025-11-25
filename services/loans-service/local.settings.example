@@ -6,6 +6,8 @@
     "COSMOS_ENDPOINT": "https://<your-cosmos-account>.documents.azure.com:443/",
     "COSMOS_KEY": "<your-cosmos-key>",
     "COSMOS_DATABASE_ID": "deviceloan",
-    "COSMOS_CONTAINER_ID": "products"
+    "COSMOS_CONTAINER_ID": "products",
+		"EVENTGRID_ENDPOINT": "url",
+		"EVENTGRID_KEY": "key"
   }
 }
