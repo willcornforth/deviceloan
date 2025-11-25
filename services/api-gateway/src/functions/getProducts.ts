@@ -15,32 +15,18 @@ export async function getProducts(
 	// Validate the OAuth2 token
 	const authContext = await oauth2Validator.validate(request);
 
-	// Check if user is authenticated
-	if (!authContext.authenticated) {
-		context.log('Authentication failed - no valid token provided');
-		return {
-			status: 401,
-			jsonBody: {
-				error: 'Unauthorized',
-				message: 'Invalid or missing authentication token'
-			}
-		};
-	}
-
-	// Check for required scope
-	// if (!oauth2Validator.hasScope(authContext, 'read:products')) {
-	// 	context.log(`User ${authContext.subject} lacks required scope: read:products`);
+	// Check if user is authenticated - REMOVED to allow anon access.
+	// if (!authContext.authenticated) {
+	// 	context.log('Authentication failed - no valid token provided');
 	// 	return {
-	// 		status: 403,
+	// 		status: 401,
 	// 		jsonBody: {
-	// 			error: 'Forbidden',
-	// 			message: 'Insufficient permissions to access this resource'
+	// 			error: 'Unauthorized',
+	// 			message: 'Invalid or missing authentication token'
 	// 		}
 	// 	};
 	// }
-
-	// Business logic - user is authenticated and authorized
-	context.log(`User ${authContext.subject} is accessing GET products`);
+	// context.log(`User ${authContext.subject} is accessing GET products`);
 
 	// Contact products service and retrieve products using HOST_KEY
 	// Host key can be undefined for local development.
