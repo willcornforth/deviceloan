@@ -3,6 +3,8 @@ import {
   CreateLoanOutput,
   ListLoansInput,
   ListLoansOutput,
+  ReturnLoanInput,
+  ReturnLoanOutput,
   LoanService
 } from "../app/loan-service";
 
@@ -86,6 +88,44 @@ export class HttpLoanService implements LoanService {
 
     // Convert date strings back to Date objects
     const loanData = json.data;
+    return {
+      loan: {
+        ...loanData,
+      },
+    };
+  }
+
+  async returnLoan(input: ReturnLoanInput): Promise<ReturnLoanOutput> {
+    const baseUrl = import.meta.env.DEV
+      ? "/api"
+      : import.meta.env.VITE_API_GATEWAY_BASE_URL;
+
+    if (!baseUrl) {
+      throw new Error(
+        "Missing API Gateway base URL configuration. Please check your environment variables."
+      );
+    }
+
+    const response = await fetch(`${baseUrl}/loans/${input.loanId}/return`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${this.token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response
+        .json()
+        .catch(() => ({ message: response.statusText }));
+      throw new Error(
+        `Failed to return loan: ${errorData.message || response.statusText}`
+      );
+    }
+
+    const json = await response.json();
+    const loanData = json.data;
+
     return {
       loan: {
         ...loanData,

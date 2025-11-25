@@ -39,7 +39,16 @@ export type ListLoansOutput = {
 	readonly loans: LoanProductDTO[];
 }
 
+export type ReturnLoanInput = {
+	readonly loanId: LoanId;
+}
+
+export type ReturnLoanOutput = {
+	readonly loan: Loan;
+}
+
 export interface LoanService {
   createLoan(input: CreateLoanInput): Promise<CreateLoanOutput>;
 	listLoans(input: ListLoansInput): Promise<ListLoansOutput>;
+	returnLoan(input: ReturnLoanInput): Promise<ReturnLoanOutput>;
 }
