@@ -6,19 +6,21 @@ import {
 	handleLoanCreated,
 	LoanCreatedEvent,
 } from '../app/handle-loan-created';
-
-export interface LoanCreatedEventData {
-	readonly id: string;
-	readonly userId: string;
-	readonly productId: string;
-	readonly dueDate: string;
-}
+import { LoanEventTypes, LoanCreatedEventData } from '../domain/loan-events';
 
 export async function loanCreatedHandler(
 	event: EventGridEvent,
 	context: InvocationContext
 ): Promise<void> {
 	context.log('Processing Loan.Created event:', event.subject);
+
+	// Validate event type (defense in depth)
+	if (event.eventType !== LoanEventTypes.Created) {
+		context.warn(
+			`Unexpected event type: ${event.eventType}, expected ${LoanEventTypes.Created}`
+		);
+		return;
+	}
 
 	try {
 		const eventData = event.data as unknown as LoanCreatedEventData;
