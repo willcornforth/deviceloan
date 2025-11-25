@@ -75,7 +75,7 @@ function Home() {
           <h2 className="text-2xl font-semibold text-gray-900 mb-2">My Loans</h2>
           <p className="text-gray-600">
             {isAuthenticated 
-              ? 'Track and manage your current device loans and loan history'
+              ? 'Track and manage your current device loans and history'
               : 'Sign in to track and manage your device loans'}
           </p>
         </Link>
