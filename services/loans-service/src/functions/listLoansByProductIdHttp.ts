@@ -6,6 +6,7 @@ import {
 } from "@azure/functions";
 import { listLoansByProductId } from "../app/listLoansByProductId";
 import { getLoanRepo } from "../config/appServices";
+import { isValidGuid } from "../utils/validators";
 
 async function handler(
   request: HttpRequest,
@@ -18,6 +19,13 @@ async function handler(
       return {
         status: 400,
         jsonBody: { error: "Product ID is required" },
+      };
+    }
+
+    if (!isValidGuid(productId)) {
+      return {
+        status: 400,
+        jsonBody: { error: "Product ID must be a valid GUID" },
       };
     }
 
