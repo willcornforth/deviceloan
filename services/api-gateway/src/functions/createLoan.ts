@@ -86,6 +86,17 @@ export async function createLoan(
       context
     );
 
+		// TODO: This should be done by the product service when it recieves an EventGrid response.
+		const productService = ServiceConfig.getProductsService();
+		productService.request(
+			{
+				method: "PUT",
+				path: `/products/${body.productId}`,
+				body: { status: "on-loan" }
+			},
+			context
+		);
+
     return ResponseBuilder.created(loan, "Loan created successfully");
   } catch (error) {
     context.log(`Error in createLoan: ${error}`);
