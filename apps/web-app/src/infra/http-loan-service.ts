@@ -1,17 +1,53 @@
 import {
   CreateLoanInput,
   CreateLoanOutput,
-  LoanService,
   ListLoansInput,
   ListLoansOutput,
-  GetLoanInput,
-  GetLoanOutput,
-  ReturnLoanInput,
-  ReturnLoanOutput,
+  LoanService
 } from "../app/loan-service";
 
 export class HttpLoanService implements LoanService {
   constructor(private readonly token: string) {}
+
+  async listLoans(input: ListLoansInput): Promise<ListLoansOutput> {
+    const baseUrl = import.meta.env.DEV
+      ? "/api"
+      : import.meta.env.VITE_API_GATEWAY_BASE_URL;
+
+    if (!baseUrl) {
+      throw new Error(
+        "Missing API Gateway base URL configuration. Please check your environment variables."
+      );
+    }
+
+    if (!input.userId) {
+      throw new Error("User ID is required to list loans");
+    }
+
+    const response = await fetch(`${baseUrl}/users/${input.userId}/loans`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${this.token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response
+        .json()
+        .catch(() => ({ message: response.statusText }));
+      throw new Error(
+        `Failed to list loans: ${errorData.message || response.statusText}`
+      );
+    }
+
+    const json = await response.json();
+    const loansData = json.data;
+
+    return {
+      loans: loansData,
+    };
+  }
 
   async createLoan(input: CreateLoanInput): Promise<CreateLoanOutput> {
     // In development, use relative path to leverage Vite proxy and avoid CORS
@@ -55,17 +91,5 @@ export class HttpLoanService implements LoanService {
         ...loanData,
       },
     };
-  }
-
-  async listLoans(_input?: ListLoansInput): Promise<ListLoansOutput> {
-    throw new Error("Method not implemented.");
-  }
-
-  async getLoan(_input: GetLoanInput): Promise<GetLoanOutput> {
-    throw new Error("Method not implemented.");
-  }
-
-  async returnLoan(_input: ReturnLoanInput): Promise<ReturnLoanOutput> {
-    throw new Error("Method not implemented.");
   }
 }

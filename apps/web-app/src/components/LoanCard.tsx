@@ -1,4 +1,4 @@
-import { ClockIcon, CalendarIcon } from '@heroicons/react/24/outline';
+import { ClockIcon, CalendarIcon, ComputerDesktopIcon, DeviceTabletIcon, DevicePhoneMobileIcon, TvIcon, WrenchScrewdriverIcon } from '@heroicons/react/24/outline';
 
 interface LoanCardProps {
   image: string;
@@ -10,6 +10,24 @@ interface LoanCardProps {
   isActive?: boolean;
   onReturn?: () => void;
 }
+
+const getCategoryIcon = (category: string) => {
+  const normalizedCategory = category.toLowerCase();
+  switch (normalizedCategory) {
+    case 'laptop':
+      return <ComputerDesktopIcon className="h-4 w-4 text-gray-400" />;
+    case 'tablet':
+      return <DeviceTabletIcon className="h-4 w-4 text-gray-400" />;
+    case 'phone':
+      return <DevicePhoneMobileIcon className="h-4 w-4 text-gray-400" />;
+    case 'monitor':
+      return <TvIcon className="h-4 w-4 text-gray-400" />;
+    case 'accessory':
+      return <WrenchScrewdriverIcon className="h-4 w-4 text-gray-400" />;
+    default:
+      return <ComputerDesktopIcon className="h-4 w-4 text-gray-400" />;
+  }
+};
 
 function LoanCard({
   image,
@@ -46,7 +64,10 @@ function LoanCard({
         <div className="flex items-start justify-between mb-3">
           <div>
             <h3 className="text-lg font-semibold text-gray-900 mb-1">{device}</h3>
-            <p className="text-sm text-gray-500">{category}</p>
+            <div className="flex items-center gap-1.5 text-sm text-gray-500">
+              {getCategoryIcon(category)}
+              <span>{category.charAt(0).toUpperCase() + category.slice(1).toLowerCase()}</span>
+            </div>
           </div>
           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
             status === 'Overdue' 

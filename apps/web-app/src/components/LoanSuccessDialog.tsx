@@ -45,7 +45,9 @@ function LoanSuccessDialog({ isOpen, onClose, loan, deviceName }: LoanSuccessDia
   };
 
   const calculateDuration = (): number => {
-    const diff = loan.dueDate.getTime() - loan.loanDate.getTime();
+    const dueDate = new Date(loan.dueDate);
+    const loanDate = new Date(loan.loanDate);
+    const diff = dueDate.getTime() - loanDate.getTime();
     return Math.ceil(diff / (1000 * 60 * 60 * 24));
   };
 
