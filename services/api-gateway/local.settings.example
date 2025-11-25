@@ -6,7 +6,9 @@
     "AUTH0_DOMAIN": "your-tenant.auth0.com",
     "AUTH0_AUDIENCE": "your-api-audience",
     "PRODUCTS_SERVICE_BASE_URL": "http://localhost:7072/api",
-    "PRODUCTS_SERVICE_HOST_KEY": ""
+    "PRODUCTS_SERVICE_HOST_KEY": "",
+    "LOANS_SERVICE_BASE_URL": "http://localhost:7073/api",
+    "LOANS_SERVICE_HOST_KEY": ""
   },
   "Host": {
     "CORS": "*",
