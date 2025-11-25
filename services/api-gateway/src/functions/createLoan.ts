@@ -66,6 +66,6 @@ export async function createLoan(
 app.http("createLoan", {
   methods: ["POST"],
   authLevel: "anonymous",
-  route: "loan/create",
+  route: "loans",
   handler: createLoan,
 });
