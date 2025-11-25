@@ -10,9 +10,11 @@ import SearchBar from "../components/SearchBar";
 import CategoryFilter, { Category } from "../components/CategoryFilter";
 import DeviceCard from "../components/DeviceCard";
 import LoanDeviceModal from "../components/LoanDeviceModal";
+import LoanSuccessDialog from "../components/LoanSuccessDialog";
 import { useProducts } from "../hooks/useProducts";
 import { useLoanService } from "../hooks/useLoanService";
 import { Product } from "../app/product-service";
+import { Loan } from "../app/loan-service";
 
 function Devices() {
   const { products: devices, loading, error } = useProducts();
@@ -23,6 +25,8 @@ function Devices() {
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDevice, setSelectedDevice] = useState<Product | null>(null);
+  const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false);
+  const [createdLoan, setCreatedLoan] = useState<Loan | null>(null);
 
   const categories: Category[] = [
     { name: "All", icon: null },
@@ -48,17 +52,26 @@ function Devices() {
         productId: deviceId,
         returnDate: returnDate,
       });
+
+      console.log("Loan created successfully:", result.loan);
       
-      console.log('Loan created successfully:', result.loan);
+      // Close loan modal and open success dialog
+      setIsModalOpen(false);
+      setCreatedLoan(result.loan);
+      setIsSuccessDialogOpen(true);
       
-      // TODO: Show success message to user
       // TODO: Optionally refresh the devices list to update availability
-      
     } catch (err) {
-      console.error('Failed to create loan:', err);
+      console.error("Failed to create loan:", err);
       // TODO: Show error message to user
       throw err;
     }
+  };
+
+  const handleCloseSuccessDialog = () => {
+    setIsSuccessDialogOpen(false);
+    setCreatedLoan(null);
+    setSelectedDevice(null);
   };
 
   const filteredDevices = useMemo(() => {
@@ -124,7 +137,7 @@ function Devices() {
             {filteredDevices.map((device) => {
               const isAvailable = device.status === "available";
               const canLoan = isAuthenticated && isAvailable;
-              
+
               return (
                 <DeviceCard
                   key={device.id}
@@ -176,6 +189,14 @@ function Devices() {
         onClose={handleCloseLoanModal}
         device={selectedDevice}
         onConfirmLoan={handleConfirmLoan}
+      />
+
+      {/* Loan Success Dialog */}
+      <LoanSuccessDialog
+        isOpen={isSuccessDialogOpen}
+        onClose={handleCloseSuccessDialog}
+        loan={createdLoan}
+        deviceName={selectedDevice?.name || ''}
       />
     </div>
   );
