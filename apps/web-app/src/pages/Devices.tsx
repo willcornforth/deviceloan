@@ -11,11 +11,13 @@ import CategoryFilter, { Category } from "../components/CategoryFilter";
 import DeviceCard from "../components/DeviceCard";
 import LoanDeviceModal from "../components/LoanDeviceModal";
 import { useProducts } from "../hooks/useProducts";
+import { useLoanService } from "../hooks/useLoanService";
 import { Product } from "../app/product-service";
 
 function Devices() {
   const { products: devices, loading, error } = useProducts();
   const { isAuthenticated, loginWithRedirect } = useAuth0();
+  const { getLoanService } = useLoanService();
 
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
@@ -40,10 +42,23 @@ function Devices() {
   };
 
   const handleConfirmLoan = async (deviceId: string, returnDate: Date) => {
-    // TODO: Implement loan creation API call
-    console.log('Creating loan for device:', deviceId, 'Return date:', returnDate);
-    // After successful loan creation, you might want to refresh the devices list
-    // or show a success message
+    try {
+      const loanService = await getLoanService();
+      const result = await loanService.createLoan({
+        productId: deviceId,
+        returnDate: returnDate,
+      });
+      
+      console.log('Loan created successfully:', result.loan);
+      
+      // TODO: Show success message to user
+      // TODO: Optionally refresh the devices list to update availability
+      
+    } catch (err) {
+      console.error('Failed to create loan:', err);
+      // TODO: Show error message to user
+      throw err;
+    }
   };
 
   const filteredDevices = useMemo(() => {

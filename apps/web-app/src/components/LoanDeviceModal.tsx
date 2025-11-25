@@ -93,7 +93,7 @@ function LoanDeviceModal({ isOpen, onClose, device, onConfirmLoan }: LoanDeviceM
             </h3>
             <button
               type="button"
-              className="text-gray-400 hover:text-gray-500 transition-colors"
+              className="text-gray-400 hover:text-gray-500 transition-colors cursor-pointer"
               onClick={onClose}
             >
               <XMarkIcon className="h-6 w-6" />
@@ -188,7 +188,7 @@ function LoanDeviceModal({ isOpen, onClose, device, onConfirmLoan }: LoanDeviceM
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
                 disabled={isSubmitting}
               >
                 Cancel
@@ -196,7 +196,7 @@ function LoanDeviceModal({ isOpen, onClose, device, onConfirmLoan }: LoanDeviceM
               <button
                 type="submit"
                 disabled={!returnDate || isSubmitting}
-                className="px-6 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                className="px-6 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:bg-gray-300 disabled:cursor-not-allowed cursor-pointer transition-colors"
               >
                 {isSubmitting ? 'Creating Loan...' : 'Confirm Loan'}
               </button>
