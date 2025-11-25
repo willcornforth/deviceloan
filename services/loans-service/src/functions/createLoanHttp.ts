@@ -7,6 +7,7 @@ import {
 import { createLoan } from "../app/createLoan";
 import { getLoanRepo } from "../config/appServices";
 import { CreateLoanRequest } from "../domain/loan";
+import { loanEventPublisher } from "../infra/eventgrid-loans-publisher";
 
 interface CreateLoanBody {
   productId: string;
@@ -40,6 +41,12 @@ async function handler(
 		// Now create an eventgrid message to notify consumers a product has been loaned out.
 		// 1. This will be picked up by the product service to update the status.
 		// 2. Also the lockbox service to assign the product a lockbox.
+		await loanEventPublisher.publishLoanCreated({
+      id: loan.id,
+      userId: loan.userId,
+      productId: loan.productId,
+      dueDate: loan.dueDate.toISOString(),
+    });
 
     return {
       status: 201,
