@@ -37,6 +37,10 @@ async function handler(
     const repo = getLoanRepo();
     const loan = await createLoan(repo)(createLoanRequest);
 
+		// Now create an eventgrid message to notify consumers a product has been loaned out.
+		// 1. This will be picked up by the product service to update the status.
+		// 2. Also the lockbox service to assign the product a lockbox.
+
     return {
       status: 201,
       jsonBody: loan,
