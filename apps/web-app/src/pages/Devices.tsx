@@ -4,6 +4,7 @@ import {
   DeviceTabletIcon,
   DevicePhoneMobileIcon,
 } from "@heroicons/react/24/outline";
+import { useAuth0 } from "@auth0/auth0-react";
 import PageBanner from "../components/PageBanner";
 import SearchBar from "../components/SearchBar";
 import CategoryFilter, { Category } from "../components/CategoryFilter";
@@ -12,6 +13,7 @@ import { useProducts } from "../hooks/useProducts";
 
 function Devices() {
   const { products: devices, loading, error } = useProducts();
+  const { isAuthenticated, loginWithRedirect } = useAuth0();
 
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
@@ -83,35 +85,49 @@ function Devices() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredDevices.map((device) => (
-              <DeviceCard
-                key={device.id}
-                image={
-                  device.image ||
-                  `https://placehold.co/400x300/e0e7ff/4f46e5?text=${encodeURIComponent(
-                    device.name
-                  )}`
-                }
-                name={device.name}
-                category={
-                  device.category.charAt(0).toUpperCase() +
-                  device.category.slice(1)
-                }
-                status={
-                  device.status === "available"
-                    ? "Available"
-                    : device.status === "on-loan"
-                    ? "On Loan"
-                    : device.status.charAt(0).toUpperCase() +
-                      device.status.slice(1)
-                }
-                specs={device.description}
-                buttonText={
-                  device.status === "available" ? "Loan Device" : "Unavailable"
-                }
-                buttonDisabled={device.status !== "available"}
-              />
-            ))}
+            {filteredDevices.map((device) => {
+              const isAvailable = device.status === "available";
+              const canLoan = isAuthenticated && isAvailable;
+              
+              return (
+                <DeviceCard
+                  key={device.id}
+                  image={
+                    device.image ||
+                    `https://placehold.co/400x300/e0e7ff/4f46e5?text=${encodeURIComponent(
+                      device.name
+                    )}`
+                  }
+                  name={device.name}
+                  category={
+                    device.category.charAt(0).toUpperCase() +
+                    device.category.slice(1)
+                  }
+                  status={
+                    device.status === "available"
+                      ? "Available"
+                      : device.status === "on-loan"
+                      ? "On Loan"
+                      : device.status.charAt(0).toUpperCase() +
+                        device.status.slice(1)
+                  }
+                  specs={device.description}
+                  buttonText={
+                    !isAuthenticated && isAvailable
+                      ? "Sign in to Loan"
+                      : isAvailable
+                      ? "Loan Device"
+                      : "Unavailable"
+                  }
+                  buttonDisabled={!canLoan}
+                  onButtonClick={
+                    !isAuthenticated && isAvailable
+                      ? () => loginWithRedirect()
+                      : undefined
+                  }
+                />
+              );
+            })}
           </div>
         )}
       </div>
