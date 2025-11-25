@@ -2,6 +2,7 @@ import {
   EventGridPublisherClient,
   AzureKeyCredential,
 } from "@azure/eventgrid";
+import { InvocationContext } from "@azure/functions";
 
 interface LoanEventData {
   id: string;
@@ -30,7 +31,9 @@ export class LoanEventPublisher {
     );
   }
 
-  async publishLoanCreated(loan: LoanEventData) {
+  async publishLoanCreated(loan: LoanEventData, context?: InvocationContext) {
+		context?.log(`Publishing Loan.Created event for loan ID: ${loan.id}`);
+		
     await this.client.send([
       {
         eventType: "Loan.Created",
