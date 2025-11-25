@@ -104,13 +104,13 @@ function LoanSuccessDialog({ isOpen, onClose, loan, deviceName }: LoanSuccessDia
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-600">Start Date:</span>
                   <span className="text-sm font-medium text-gray-900">
-                    {formatDate(loan.loanDate)}
+                    {formatDate(new Date(loan.loanDate))}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-600">Due Date:</span>
                   <span className="text-sm font-medium text-gray-900">
-                    {formatDate(loan.dueDate)}
+                    {formatDate(new Date(loan.dueDate))}
                   </span>
                 </div>
                 <div className="flex justify-between">
@@ -126,7 +126,7 @@ function LoanSuccessDialog({ isOpen, onClose, loan, deviceName }: LoanSuccessDia
             <div className="mt-5 bg-blue-50 border border-blue-200 rounded-lg p-4">
               <p className="text-sm text-blue-900">
                 <span className="font-semibold">Reminder:</span> Please return the device by{' '}
-                <span className="font-semibold">{formatDate(loan.dueDate)}</span> to avoid late fees.
+                <span className="font-semibold">{formatDate(new Date(loan.dueDate))}</span> to avoid late fees.
               </p>
             </div>
 
