@@ -1,0 +1,15 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "node",
+    "AUTH0_DOMAIN": "your-tenant.auth0.com",
+    "AUTH0_AUDIENCE": "your-api-audience",
+    "PRODUCTS_SERVICE_BASE_URL": "http://localhost:7072/api",
+    "PRODUCTS_SERVICE_HOST_KEY": ""
+  },
+  "Host": {
+    "CORS": "*",
+    "CORSCredentials": false
+  }
+}
