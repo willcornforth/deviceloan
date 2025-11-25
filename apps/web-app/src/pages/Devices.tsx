@@ -9,7 +9,9 @@ import PageBanner from "../components/PageBanner";
 import SearchBar from "../components/SearchBar";
 import CategoryFilter, { Category } from "../components/CategoryFilter";
 import DeviceCard from "../components/DeviceCard";
+import LoanDeviceModal from "../components/LoanDeviceModal";
 import { useProducts } from "../hooks/useProducts";
+import { Product } from "../app/product-service";
 
 function Devices() {
   const { products: devices, loading, error } = useProducts();
@@ -17,6 +19,8 @@ function Devices() {
 
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedDevice, setSelectedDevice] = useState<Product | null>(null);
 
   const categories: Category[] = [
     { name: "All", icon: null },
@@ -24,6 +28,23 @@ function Devices() {
     { name: "Tablet", icon: DeviceTabletIcon },
     { name: "Phone", icon: DevicePhoneMobileIcon },
   ];
+
+  const handleOpenLoanModal = (device: Product) => {
+    setSelectedDevice(device);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseLoanModal = () => {
+    setIsModalOpen(false);
+    setSelectedDevice(null);
+  };
+
+  const handleConfirmLoan = async (deviceId: string, returnDate: Date) => {
+    // TODO: Implement loan creation API call
+    console.log('Creating loan for device:', deviceId, 'Return date:', returnDate);
+    // After successful loan creation, you might want to refresh the devices list
+    // or show a success message
+  };
 
   const filteredDevices = useMemo(() => {
     return devices.filter((device) => {
@@ -123,6 +144,8 @@ function Devices() {
                   onButtonClick={
                     !isAuthenticated && isAvailable
                       ? () => loginWithRedirect()
+                      : canLoan
+                      ? () => handleOpenLoanModal(device)
                       : undefined
                   }
                 />
@@ -131,6 +154,14 @@ function Devices() {
           </div>
         )}
       </div>
+
+      {/* Loan Device Modal */}
+      <LoanDeviceModal
+        isOpen={isModalOpen}
+        onClose={handleCloseLoanModal}
+        device={selectedDevice}
+        onConfirmLoan={handleConfirmLoan}
+      />
     </div>
   );
 }
