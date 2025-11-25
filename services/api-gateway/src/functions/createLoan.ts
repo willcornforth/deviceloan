@@ -11,7 +11,7 @@ import { HttpClientError } from "../infra/http-client";
 
 interface CreateLoanRequest {
   productId: string;
-  durationDays: number;
+  returnDate: string;
 }
 
 interface CreateLoanPayload {
@@ -46,17 +46,25 @@ export async function createLoan(
       return ResponseBuilder.badRequest("productId is required");
     }
 
-    if (body.durationDays <= 0) {
-      return ResponseBuilder.badRequest("Duration must be greater than 0");
-    }
-
-    if (body.durationDays > 90) {
-      return ResponseBuilder.badRequest("Duration must not exceed 90 days");
+    if (!body.returnDate) {
+      return ResponseBuilder.badRequest("returnDate is required");
     }
 
 		// Calculate the due date for the loan.
-    const dueDate = new Date();
-    dueDate.setDate(dueDate.getDate() + body.durationDays);
+    const dueDate = new Date(body.returnDate);
+
+    // Validate the return date is not more than 90 days from now
+    const now = new Date();
+    const maxReturnDate = new Date(now);
+    maxReturnDate.setDate(maxReturnDate.getDate() + 90);
+
+    if (dueDate > maxReturnDate) {
+      return ResponseBuilder.badRequest("Return date cannot be more than 90 days from today");
+    }
+
+    if (dueDate <= now) {
+      return ResponseBuilder.badRequest("Return date must be in the future");
+    }
 
 		// Create payload to send to the loans service.
 		const payload: CreateLoanPayload = {
