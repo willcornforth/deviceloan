@@ -32,6 +32,7 @@ async function handler(
       };
     }
 
+		// Let other services know this has been returned.
 		loanEventPublisher.publishLoanReturned(
 			{ 
 				id: loan.id, 

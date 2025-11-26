@@ -38,18 +38,6 @@ export const approveLoan =
 
     const updatedLoan = await repo.update(approvedLoan);
 
-    // Publish Loan.Created event now that the loan is approved
-    // This will trigger the product service to mark the product as on-loan
-    await eventPublisher.publishLoanApproved(
-      {
-        id: updatedLoan.id,
-        userId: updatedLoan.userId,
-        productId: updatedLoan.productId,
-        dueDate: updatedLoan.dueDate.toISOString(),
-      },
-      context
-    );
-
     return {
       success: true,
       loan: updatedLoan,
