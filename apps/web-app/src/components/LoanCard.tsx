@@ -135,8 +135,20 @@ function LoanCard({
           </button>
         )}
         {isActive && status === 'PendingApproval' && (
-          <div className="w-full py-2 px-4 rounded-lg text-sm font-medium text-center bg-yellow-50 text-yellow-700 border border-yellow-200">
-            Awaiting Approval
+          <div className="w-full p-4 rounded-lg text-sm bg-yellow-50 border border-yellow-200">
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 mt-0.5">
+                <svg className="h-5 w-5 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <p className="font-semibold text-yellow-900 mb-1">Awaiting Approval</p>
+                <p className="text-yellow-700 text-xs leading-relaxed">
+                  Your loan request is waiting approval from university staff. The device will be available for collection once approved.
+                </p>
+              </div>
+            </div>
           </div>
         )}
       </div>
