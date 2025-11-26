@@ -49,8 +49,8 @@ export async function returnLoan(
 
 		// Validate the user is returning their own loan (or has admin scope)
 		if (loanData?.userId !== authContext.subject) {
-			const scopeError = AuthMiddleware.requireScope(authContext, 'return:all-loans', context);
-			if (scopeError) {
+			const permissionError = AuthMiddleware.requirePermission(authContext, 'return:all-loans', context);
+			if (permissionError) {
 				context.log(`User ${authContext.subject} attempted to return loan belonging to ${loanData?.userId}`);
 				return ResponseBuilder.forbidden("You can only return your own loans");
 			}

@@ -43,7 +43,7 @@ export class OAuth2Validator {
     const token = this.extractToken(request);
 
     if (!token) {
-      return { authenticated: false, scopes: [] };
+      return { authenticated: false, permissions: [] };
     }
 
     try {
@@ -52,35 +52,33 @@ export class OAuth2Validator {
         audience: this.audience,
       });
 
-      // Extract scopes from token
-      // OAuth2 tokens typically include scopes in the 'scope' claim as a space-separated string
-      // or as a 'scp' claim (Azure AD style) as an array or string
-      let scopes: string[] = [];
+      // Extract permissions from token
+      // Auth0 includes permissions in the 'permissions' claim as an array
+      // The 'scope' claim contains OAuth scopes (openid, profile, email) - not used for authorization
+      let permissions: string[] = [];
 
-      if (typeof payload.scope === 'string') {
-        scopes = payload.scope.split(' ').filter((s) => s.trim() !== '');
-      } else if (typeof payload.scp === 'string') {
-        scopes = payload.scp.split(' ').filter((s) => s.trim() !== '');
-      } else if (Array.isArray(payload.scp)) {
-        scopes = payload.scp;
+      if (Array.isArray(payload.permissions)) {
+        permissions = payload.permissions as string[];
+      } else if (typeof payload.permissions === 'string') {
+        permissions = payload.permissions.split(' ').filter((s) => s.trim() !== '');
       }
 
       return {
         authenticated: true,
-        scopes,
+        permissions: permissions,
         subject: typeof payload.sub === 'string' ? payload.sub : undefined,
       };
     } catch (error) {
       // Token validation failed (expired, invalid signature, wrong issuer/audience, etc.)
       console.warn('Token validation failed:', (error as Error).message);
-      return { authenticated: false, scopes: [] };
+      return { authenticated: false, permissions: [] };
     }
   }
 
   /**
    * Check if the auth context has a specific scope
    */
-  hasScope(authContext: AuthContext, scope: string): boolean {
-    return authContext.authenticated && authContext.scopes.includes(scope);
+  hasPermission(authContext: AuthContext, permission: string): boolean {
+    return authContext.authenticated && authContext.permissions.includes(permission);
   }
 }

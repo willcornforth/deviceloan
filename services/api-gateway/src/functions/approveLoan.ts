@@ -33,8 +33,8 @@ export async function approveLoan(
     context.log(`User ${authContext.subject} is approving loan ${loanId}`);
 
     // TODO: Add role-based authorization check here
-    const scopeError = AuthMiddleware.requireScope(authContext, 'approve:loans', context);
-    if (scopeError) {
+    const permissionError = AuthMiddleware.requirePermission(authContext, 'approve:loans', context);
+    if (permissionError) {
       return ResponseBuilder.forbidden("Only administrators can approve loans");
     }
 

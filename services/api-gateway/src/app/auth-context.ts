@@ -5,6 +5,6 @@
  */
 export type AuthContext = {
   authenticated: boolean;
-  scopes: string[];
+  permissions: string[];
   subject?: string;
 };

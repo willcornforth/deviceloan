@@ -34,17 +34,17 @@ export class AuthMiddleware {
     return { authContext };
   }
 
-  static requireScope(
+  static requirePermission(
     authContext: AuthContext,
-    requiredScope: string,
+    requiredPermission: string,
     context: InvocationContext
   ): HttpResponseInit | null {
     const validator = this.getValidator();
     
-    if (!validator.hasScope(authContext, requiredScope)) {
-      context.log(`User ${authContext.subject} lacks required scope: ${requiredScope}`);
+    if (!validator.hasPermission(authContext, requiredPermission)) {
+      context.log(`User ${authContext.subject} lacks required permission: ${requiredPermission}`);
       return ResponseBuilder.forbidden(
-        `Required scope '${requiredScope}' not present in token`
+        `Required permission '${requiredPermission}' not present in token`
       );
     }
 

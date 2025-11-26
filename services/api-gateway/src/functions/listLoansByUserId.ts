@@ -35,9 +35,9 @@ export async function listLoansByUserId(
 		// Check if the authenticated user is requesting their own loans
 		// or has admin privileges to view other users' loans
 		if (authContext.subject !== userId) {
-			const scopeError = AuthMiddleware.requireScope(authContext, 'read:all-loans', context);
-			if (scopeError) {
-				return scopeError;
+			const permissionError = AuthMiddleware.requirePermission(authContext, 'read:all-loans', context);
+			if (permissionError) {
+				return permissionError;
 			}
 		}
 
@@ -70,7 +70,7 @@ export async function listLoansByUserId(
 
 					// Handle both cases where the product is wrapped in a 'product' field or returned directly
 					const product = response?.product ?? response;
-					
+
 					return { ...loan, product };
 				} catch (err) {
 					context.log(`Failed to fetch product ${loan.productId}: ${err}`);
