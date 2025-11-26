@@ -6,6 +6,7 @@ import {
 } from "@azure/functions";
 import { returnLoan } from "../app/returnLoan";
 import { getLoanRepo } from "../config/appServices";
+import { loanEventPublisher } from "../infra/eventgrid-loans-publisher";
 
 async function handler(
   request: HttpRequest,
@@ -30,6 +31,16 @@ async function handler(
         jsonBody: { error: "Loan not found" },
       };
     }
+
+		loanEventPublisher.publishLoanReturned(
+			{ 
+				id: loan.id, 
+				userId: loan.userId, 
+				productId: loan.productId, 
+				dueDate: loan.dueDate.toISOString() 
+			},
+			context
+		);
 
     return {
       status: 200,
