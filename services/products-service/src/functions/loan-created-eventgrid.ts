@@ -3,9 +3,9 @@
 import { app, EventGridEvent, InvocationContext } from '@azure/functions';
 import { getProductRepo } from '../config/appServices';
 import {
-  handleLoanCreated as handleLoanApproved,
+  handleLoanApproved,
   LoanApprovedEvent,
-} from '../app/handle-loan-created';
+} from '../app/handle-loan-approved';
 import { LoanEventTypes, LoanApprovedEventData } from '../domain/loan-events';
 
 export async function loanApprovedHandler(
