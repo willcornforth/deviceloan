@@ -72,6 +72,8 @@ function Devices() {
     setIsSuccessDialogOpen(false);
     setCreatedLoan(null);
     setSelectedDevice(null);
+		// Go to the loans page
+		window.location.href = "/loans";
   };
 
   const filteredDevices = useMemo(() => {
