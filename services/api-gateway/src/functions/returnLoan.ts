@@ -67,17 +67,17 @@ export async function returnLoan(
 
 		// TODO: This should be done by the product service when it receives an EventGrid response.
 		// Update the product status back to available
-		if (loan?.productId) {
-			const productService = ServiceConfig.getProductsService();
-			productService.request(
-				{
-					method: "PUT",
-					path: `/products/${loan.productId}`,
-					body: { status: "available" }
-				},
-				context
-			);
-		}
+		// if (loan?.productId) {
+		// 	const productService = ServiceConfig.getProductsService();
+		// 	productService.request(
+		// 		{
+		// 			method: "PUT",
+		// 			path: `/products/${loan.productId}`,
+		// 			body: { status: "available" }
+		// 		},
+		// 		context
+		// 	);
+		// }
 
 		return ResponseBuilder.success(loan, "Loan returned successfully");
 	} catch (error) {
