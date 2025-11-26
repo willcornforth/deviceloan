@@ -76,9 +76,11 @@ function LoanCard({
               ? 'bg-red-100 text-red-800' 
               : status === 'Active'
               ? 'bg-green-100 text-green-800'
+              : status === 'PendingApproval'
+              ? 'bg-yellow-100 text-yellow-800'
               : 'bg-gray-100 text-gray-800'
           }`}>
-            {status}
+            {status === 'PendingApproval' ? 'Pending Approval' : status}
           </span>
         </div>
         
@@ -109,7 +111,7 @@ function LoanCard({
           )}
         </div>
         
-        {isActive && (
+        {isActive && status !== 'PendingApproval' && (
           <button 
             onClick={onReturn}
             disabled={isReturning}
@@ -131,6 +133,11 @@ function LoanCard({
               'Return Device'
             )}
           </button>
+        )}
+        {isActive && status === 'PendingApproval' && (
+          <div className="w-full py-2 px-4 rounded-lg text-sm font-medium text-center bg-yellow-50 text-yellow-700 border border-yellow-200">
+            Awaiting Approval
+          </div>
         )}
       </div>
     </div>
