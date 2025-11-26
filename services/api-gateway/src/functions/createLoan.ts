@@ -97,7 +97,7 @@ export async function createLoan(
 		// 	context
 		// );
 
-    return ResponseBuilder.created(loan, "Loan created successfully");
+    return ResponseBuilder.created(loan, "Loan created successfully and is pending approval");
   } catch (error) {
     context.log(`Error in createLoan: ${error}`);
 
