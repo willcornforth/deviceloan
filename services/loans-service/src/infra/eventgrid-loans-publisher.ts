@@ -15,7 +15,7 @@ interface EventPublisherClient {
 	send(events: Array<any>): Promise<void>;
 }
 
-class EventGridPublisherClient implements EventPublisherClient {
+class AzureEventGridPublisherClient implements EventPublisherClient {
 	private client: EventGridPublisherClient<"EventGrid">;
 
   constructor() {
@@ -44,7 +44,7 @@ export class LoanEventPublisher {
   private client: EventPublisherClient
 
   constructor(client?: EventPublisherClient) {
-		this.client = client || new EventGridPublisherClient(); // Default to EventGridPublisherClient
+		this.client = client || new AzureEventGridPublisherClient(); // Default to EventGridPublisherClient
   }
 
   async publishLoanCreated(loan: LoanEventData, context?: InvocationContext) {
