@@ -1,19 +1,30 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import PageBanner from '../components/PageBanner';
 import TabSwitch from '../components/TabSwitch';
 import LoanCard from '../components/LoanCard';
 import { useLoans } from '../hooks/useLoans';
 import { useLoanService } from '../hooks/useLoanService';
 
-type TabType = 'active' | 'history';
+type TabType = 'pending' | 'active' | 'history';
 
 
 
 function Loans() {
-  const [activeTab, setActiveTab] = useState<TabType>('active');
+  const [activeTab, setActiveTab] = useState<TabType>('pending');
   const { activeLoans, pastLoans, loading, error, refetch } = useLoans();
   const { getLoanService } = useLoanService();
   const [returningLoanId, setReturningLoanId] = useState<string | null>(null);
+
+  // Separate pending and active loans
+  const pendingLoans = useMemo(
+    () => activeLoans.filter((loan) => loan.status === 'PendingApproval'),
+    [activeLoans]
+  );
+
+  const approvedLoans = useMemo(
+    () => activeLoans.filter((loan) => loan.status === 'Active'),
+    [activeLoans]
+  );
 
   const handleReturnDevice = async (loanId: string) => {
     try {
@@ -78,21 +89,46 @@ function Loans() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <TabSwitch
           tabs={[
-            { id: 'active', label: 'Active', count: activeLoans.length },
+            { id: 'pending', label: 'Pending Approval', count: pendingLoans.length },
+            { id: 'active', label: 'Active', count: approvedLoans.length },
             { id: 'history', label: 'History', count: pastLoans.length }
           ]}
           activeTab={activeTab}
           onTabChange={(tab) => setActiveTab(tab as TabType)}
         />
         <div>
+          {activeTab === 'pending' && (
+            pendingLoans.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-gray-500 text-lg">You have no loans awaiting approval.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {pendingLoans.map((loan) => (
+                  <LoanCard
+                    key={loan.id}
+                    image={`https://placehold.co/400x300/e0e7ff/4f46e5?text=${loan.product?.name ?? 'Name Unavailable'}`}
+                    device={loan.product?.name ?? 'Name Unavailable'}
+                    category={loan.product?.category ?? 'Category Unavailable'}
+                    loanDate={formatDate(loan.loanDate)}
+                    returnDate={formatDate(loan.dueDate)}
+                    status={loan.status}
+                    isActive={true}
+                    onReturn={() => handleReturnDevice(loan.id)}
+                    isReturning={returningLoanId === loan.id}
+                  />
+                ))}
+              </div>
+            )
+          )}
           {activeTab === 'active' && (
-            activeLoans.length === 0 ? (
+            approvedLoans.length === 0 ? (
               <div className="text-center py-12">
                 <p className="text-gray-500 text-lg">You have no active loans.</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {activeLoans.map((loan) => (
+                {approvedLoans.map((loan) => (
                   <LoanCard
                     key={loan.id}
                     image={`https://placehold.co/400x300/e0e7ff/4f46e5?text=${loan.product?.name ?? 'Name Unavailable'}`}

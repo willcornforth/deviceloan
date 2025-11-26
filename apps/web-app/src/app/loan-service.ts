@@ -5,6 +5,7 @@ export type UserId = string;
 export type ProductId = string;
 
 export enum LoanStatus {
+  PendingApproval = "PendingApproval",
   Active = "Active",
   Returned = "Returned",
   Overdue = "Overdue",
