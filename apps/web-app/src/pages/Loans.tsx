@@ -7,6 +7,8 @@ import { useLoanService } from '../hooks/useLoanService';
 
 type TabType = 'active' | 'history';
 
+
+
 function Loans() {
   const [activeTab, setActiveTab] = useState<TabType>('active');
   const { activeLoans, pastLoans, loading, error, refetch } = useLoans();
@@ -93,9 +95,9 @@ function Loans() {
                 {activeLoans.map((loan) => (
                   <LoanCard
                     key={loan.id}
-                    image={`https://placehold.co/400x300/e0e7ff/4f46e5?text=${loan.product.name}`}
-                    device={loan.product.name}
-                    category={loan.product.category}
+                    image={`https://placehold.co/400x300/e0e7ff/4f46e5?text=${loan.product?.name ?? 'Name Unavailable'}`}
+                    device={loan.product?.name ?? 'Name Unavailable'}
+                    category={loan.product?.category ?? 'Category Unavailable'}
                     loanDate={formatDate(loan.loanDate)}
                     returnDate={formatDate(loan.dueDate)}
                     status={loan.status}
@@ -117,9 +119,9 @@ function Loans() {
                 {pastLoans.map((loan) => (
                   <LoanCard
                     key={loan.id}
-                    image={`https://placehold.co/400x300/e0e7ff/4f46e5?text=${loan.product.name}`}
-                    device={loan.product.name}
-                    category={loan.product.category}
+                    image={`https://placehold.co/400x300/e0e7ff/4f46e5?text=${loan.product?.name ?? 'Name Unavailable'}`}
+                    device={loan.product?.name ?? 'Name Unavailable'}
+                    category={loan.product?.category ?? 'Category Unavailable'}
                     loanDate={formatDate(loan.loanDate)}
                     returnDate={formatDate(loan.dueDate)}
                     status={loan.status}

@@ -29,5 +29,5 @@ export interface LoanProductDTO {
 	returnDate?: Date;
 	createdAt: Date;
 	updatedAt: Date;
-	product: Product
+	product?: Product;
 }
