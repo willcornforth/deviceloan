@@ -38,26 +38,6 @@ async function handler(
 		const repo = getLoanRepo();
 		const loan = await createLoan(repo)(createLoanRequest);
 
-		// Now create an eventgrid message to notify consumers a product has been loaned out.
-		// 1. This will be picked up by the product service to update the status.
-		// 2. Also the lockbox service to assign the product a lockbox.
-		try {
-			console.log("About to publish Loan.Created event for loan:", loan.id);
-			await loanEventPublisher.publishLoanApproved(
-				{
-					id: loan.id,
-					userId: loan.userId,
-					productId: loan.productId,
-					dueDate: loan.dueDate.toISOString(),
-				},
-				context
-			);
-			console.log("Successfully published Loan.Created event");
-		} catch (eventError) {
-			console.error("Failed to publish Loan.Created event:", eventError);
-			// Don't fail the request if event publishing fails
-		}
-
 		return {
 			status: 201,
 			jsonBody: loan,

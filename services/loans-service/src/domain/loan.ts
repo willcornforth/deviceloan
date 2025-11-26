@@ -4,6 +4,7 @@ export enum LoanStatus {
   Returned = "Returned",
   Overdue = "Overdue",
   Cancelled = "Cancelled",
+  Rejected = "Rejected",
 }
 
 export interface Loan {
@@ -59,6 +60,14 @@ export function updateLoan(loan: Loan, updates: UpdateLoanRequest): Loan {
   return {
     ...loan,
     ...updates,
+    updatedAt: new Date(),
+  };
+}
+
+export function rejectLoan(loan: Loan): Loan {
+  return {
+    ...loan,
+    status: LoanStatus.Rejected,
     updatedAt: new Date(),
   };
 }

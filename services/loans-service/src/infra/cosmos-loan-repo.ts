@@ -104,6 +104,16 @@ export class CosmosLoanRepo implements LoanRepo {
     return resources.map(toLoan);
   }
 
+  async listPendingApproval(): Promise<readonly Loan[]> {
+    const { resources } = await this.container.items
+      .query<LoanDocument>({
+        query: "SELECT * FROM c WHERE c.status = @status",
+        parameters: [{ name: "@status", value: "PendingApproval" }],
+      })
+      .fetchAll();
+    return resources.map(toLoan);
+  }
+
   async update(loan: Loan): Promise<Loan> {
     const document = toLoanDocument(loan);
     const { resource } = await this.container
