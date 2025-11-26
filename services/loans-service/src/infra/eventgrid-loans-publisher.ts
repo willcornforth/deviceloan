@@ -47,12 +47,12 @@ export class LoanEventPublisher {
 		this.client = client || new AzureEventGridPublisherClient(); // Default to EventGridPublisherClient
   }
 
-  async publishLoanCreated(loan: LoanEventData, context?: InvocationContext) {
-		context?.log(`Publishing Loan.Created event for loan ID: ${loan.id}`);
+  async publishLoanApproved(loan: LoanEventData, context?: InvocationContext) {
+		context?.log(`Publishing Loan.Approved event for loan ID: ${loan.id}`);
 		
     await this.client.send([
       {
-        eventType: "Loan.Created",
+        eventType: "Loan.Approved",
         subject: `loans/${loan.id}`,
         dataVersion: "1.0",
         data: {

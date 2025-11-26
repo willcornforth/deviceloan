@@ -1,4 +1,5 @@
 export enum LoanStatus {
+  PendingApproval = "PendingApproval",
   Active = "Active",
   Returned = "Returned",
   Overdue = "Overdue",
@@ -35,7 +36,7 @@ export function createLoan(request: CreateLoanRequest): Loan {
     id: crypto.randomUUID(),
     productId: request.productId,
     userId: request.userId,
-    status: LoanStatus.Active,
+    status: LoanStatus.PendingApproval,
     loanDate: now,
     dueDate: request.dueDate,
     returnDate: undefined,

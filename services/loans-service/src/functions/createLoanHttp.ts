@@ -43,7 +43,7 @@ async function handler(
 		// 2. Also the lockbox service to assign the product a lockbox.
 		try {
 			console.log("About to publish Loan.Created event for loan:", loan.id);
-			await loanEventPublisher.publishLoanCreated(
+			await loanEventPublisher.publishLoanApproved(
 				{
 					id: loan.id,
 					userId: loan.userId,
