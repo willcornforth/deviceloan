@@ -1,40 +1,40 @@
 // Shared Event Grid event types for loan domain events
 
 export const LoanEventTypes = {
-  Created: 'Loan.Created',
-  Returned: 'Loan.Returned',
-  Extended: 'Loan.Extended',
-  Overdue: 'Loan.Overdue',
+	Approved: 'Loan.Approved',
+	Returned: 'Loan.Returned',
+	Extended: 'Loan.Extended',
+	Overdue: 'Loan.Overdue',
 } as const;
 
 export type LoanEventType =
-  (typeof LoanEventTypes)[keyof typeof LoanEventTypes];
+	(typeof LoanEventTypes)[keyof typeof LoanEventTypes];
 
 // Base event data shared across loan events
 export interface BaseLoanEventData {
-  readonly id: string;
-  readonly userId: string;
-  readonly productId: string;
+	readonly id: string;
+	readonly userId: string;
+	readonly productId: string;
 }
 
-// Loan.Created event data
+// Loan.Approved event data
 export interface LoanApprovedEventData extends BaseLoanEventData {
-  readonly dueDate: string;
+	readonly dueDate: string;
 }
 
 // Loan.Returned event data
 export interface LoanReturnedEventData extends BaseLoanEventData {
-  readonly returnedAt: string;
+	readonly returnedAt: string;
 }
 
 // Loan.Extended event data
 export interface LoanExtendedEventData extends BaseLoanEventData {
-  readonly previousDueDate: string;
-  readonly newDueDate: string;
+	readonly previousDueDate: string;
+	readonly newDueDate: string;
 }
 
 // Loan.Overdue event data
 export interface LoanOverdueEventData extends BaseLoanEventData {
-  readonly dueDate: string;
-  readonly daysOverdue: number;
+	readonly dueDate: string;
+	readonly daysOverdue: number;
 }
