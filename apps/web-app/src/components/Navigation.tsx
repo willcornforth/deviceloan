@@ -1,10 +1,13 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import { useAuth0 } from '@auth0/auth0-react';
 import AuthButton from './AuthButton';
 
 function Navigation() {
   const location = useLocation();
+  const { getAccessTokenSilently, isAuthenticated } = useAuth0();
   const [isScrolled, setIsScrolled] = useState(false);
+  const [hasApprovePermission, setHasApprovePermission] = useState(false);
   
   useEffect(() => {
     const handleScroll = () => {
@@ -14,6 +17,26 @@ function Navigation() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  useEffect(() => {
+    const checkPermissions = async () => {
+      if (!isAuthenticated) {
+        setHasApprovePermission(false);
+        return;
+      }
+
+      try {
+        const token = await getAccessTokenSilently();
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const permissions = payload.permissions || [];
+        setHasApprovePermission(permissions.includes('approve:loans'));
+      } catch {
+        setHasApprovePermission(false);
+      }
+    };
+
+    checkPermissions();
+  }, [isAuthenticated, getAccessTokenSilently]);
   
   const isActive = (path: string): boolean => location.pathname === path;
   
@@ -64,6 +87,18 @@ function Navigation() {
             >
               Loans
             </Link>
+            {hasApprovePermission && (
+              <Link 
+                to="/approvals" 
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  isActive('/approvals') 
+                    ? 'bg-indigo-50 text-indigo-700' 
+                    : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                }`}
+              >
+                Approvals
+              </Link>
+            )}
             <div className="ml-4 pl-4 border-l border-gray-200">
               <AuthButton />
             </div>

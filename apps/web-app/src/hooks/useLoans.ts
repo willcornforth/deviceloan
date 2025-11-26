@@ -1,8 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
-import { Loan, LoanStatus } from '../app/loan-service';
 import { HttpLoanService } from '../infra/http-loan-service';
-import { LoanProductDTO } from '../domain/loans';
+import { LoanProductDTO, LoanStatus } from '../domain/loans';
 
 export const useLoans = () => {
     const { getAccessTokenSilently, isAuthenticated, isLoading: isAuthLoading, user } = useAuth0();
@@ -40,8 +39,16 @@ export const useLoans = () => {
     );
 
     const pastLoans = loans.filter(
-        (loan) => loan.status === LoanStatus.Returned || loan.status === LoanStatus.Cancelled
+        (loan) => loan.status === LoanStatus.Returned || loan.status === LoanStatus.Cancelled || loan.status === LoanStatus.Rejected
     );
 
-    return { loans, activeLoans, pastLoans, loading, error, refetch: fetchLoans };
+    const pendingLoans = loans.filter(
+        (loan) => loan.status === LoanStatus.PendingApproval
+    );
+
+    const rejectedLoans = loans.filter(
+        (loan) => loan.status === LoanStatus.Rejected
+    );
+
+    return { loans, activeLoans, pastLoans, pendingLoans, rejectedLoans, loading, error, refetch: fetchLoans };
 };

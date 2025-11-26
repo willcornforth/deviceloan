@@ -5,6 +5,11 @@ import {
   ListLoansOutput,
   ReturnLoanInput,
   ReturnLoanOutput,
+  ListPendingApprovalsOutput,
+  ApproveLoanInput,
+  ApproveLoanOutput,
+  RejectLoanInput,
+  RejectLoanOutput,
   LoanService
 } from "../app/loan-service";
 
@@ -130,6 +135,108 @@ export class HttpLoanService implements LoanService {
       loan: {
         ...loanData,
       },
+    };
+  }
+
+  async listPendingApprovals(): Promise<ListPendingApprovalsOutput> {
+    const baseUrl = import.meta.env.DEV
+      ? "/api"
+      : import.meta.env.VITE_API_GATEWAY_BASE_URL;
+
+    if (!baseUrl) {
+      throw new Error(
+        "Missing API Gateway base URL configuration. Please check your environment variables."
+      );
+    }
+
+    const response = await fetch(`${baseUrl}/loans/status/pending-approval`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${this.token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response
+        .json()
+        .catch(() => ({ message: response.statusText }));
+      throw new Error(
+        `Failed to list pending approvals: ${errorData.message || response.statusText}`
+      );
+    }
+
+    const json = await response.json();
+    return {
+      loans: json.data,
+    };
+  }
+
+  async approveLoan(input: ApproveLoanInput): Promise<ApproveLoanOutput> {
+    const baseUrl = import.meta.env.DEV
+      ? "/api"
+      : import.meta.env.VITE_API_GATEWAY_BASE_URL;
+
+    if (!baseUrl) {
+      throw new Error(
+        "Missing API Gateway base URL configuration. Please check your environment variables."
+      );
+    }
+
+    const response = await fetch(`${baseUrl}/loans/${input.loanId}/approve`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${this.token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response
+        .json()
+        .catch(() => ({ message: response.statusText }));
+      throw new Error(
+        `Failed to approve loan: ${errorData.message || response.statusText}`
+      );
+    }
+
+    const json = await response.json();
+    return {
+      loan: json.data,
+    };
+  }
+
+  async rejectLoan(input: RejectLoanInput): Promise<RejectLoanOutput> {
+    const baseUrl = import.meta.env.DEV
+      ? "/api"
+      : import.meta.env.VITE_API_GATEWAY_BASE_URL;
+
+    if (!baseUrl) {
+      throw new Error(
+        "Missing API Gateway base URL configuration. Please check your environment variables."
+      );
+    }
+
+    const response = await fetch(`${baseUrl}/loans/${input.loanId}/reject`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${this.token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response
+        .json()
+        .catch(() => ({ message: response.statusText }));
+      throw new Error(
+        `Failed to reject loan: ${errorData.message || response.statusText}`
+      );
+    }
+
+    const json = await response.json();
+    return {
+      loan: json.data,
     };
   }
 }

@@ -12,7 +12,7 @@ interface TabSwitchProps {
 
 function TabSwitch({ tabs, activeTab, onTabChange }: TabSwitchProps) {
   return (
-    <div className="flex space-x-1 rounded-xl bg-gray-100 p-1 mb-6 max-w-md">
+    <div className="flex gap-1 space-x-1 rounded-xl bg-gray-100 p-1 mb-6 max-w-md">
       {tabs.map((tab) => (
         <button
           key={tab.id}

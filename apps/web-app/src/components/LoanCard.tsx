@@ -78,6 +78,8 @@ function LoanCard({
               ? 'bg-green-100 text-green-800'
               : status === 'PendingApproval'
               ? 'bg-yellow-100 text-yellow-800'
+              : status === 'Rejected'
+              ? 'bg-red-100 text-red-800'
               : 'bg-gray-100 text-gray-800'
           }`}>
             {status === 'PendingApproval' ? 'Pending Approval' : status}
@@ -111,7 +113,7 @@ function LoanCard({
           )}
         </div>
         
-        {isActive && status !== 'PendingApproval' && (
+        {isActive && status !== 'PendingApproval' && status !== 'Rejected' && (
           <button 
             onClick={onReturn}
             disabled={isReturning}
@@ -133,6 +135,23 @@ function LoanCard({
               'Return Device'
             )}
           </button>
+        )}
+        {status === 'Rejected' && (
+          <div className="w-full p-4 rounded-lg text-sm bg-red-50 border border-red-200">
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 mt-0.5">
+                <svg className="h-5 w-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <p className="font-semibold text-red-900 mb-1">Loan Rejected</p>
+                <p className="text-red-700 text-xs leading-relaxed">
+                  Your loan request was not approved. Please contact university staff for more information.
+                </p>
+              </div>
+            </div>
+          </div>
         )}
         {isActive && status === 'PendingApproval' && (
           <div className="w-full p-4 rounded-lg text-sm bg-yellow-50 border border-yellow-200">

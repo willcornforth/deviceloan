@@ -1,28 +1,4 @@
-import { LoanProductDTO } from "../domain/loans";
-
-export type LoanId = string;
-export type UserId = string;
-export type ProductId = string;
-
-export enum LoanStatus {
-  PendingApproval = "PendingApproval",
-  Active = "Active",
-  Returned = "Returned",
-  Overdue = "Overdue",
-  Cancelled = "Cancelled",
-}
-
-export interface Loan {
-  readonly id: LoanId;
-  readonly productId: ProductId;
-  readonly userId: UserId;
-  readonly status: LoanStatus;
-  readonly loanDate: Date;
-  readonly dueDate: Date;
-  readonly returnDate?: Date;
-  readonly createdAt: Date;
-  readonly updatedAt: Date;
-}
+import { Loan, LoanId, LoanProductDTO, ProductId, UserId } from "../domain/loans";
 
 export type CreateLoanInput = {
   readonly productId: ProductId;
@@ -48,8 +24,31 @@ export type ReturnLoanOutput = {
 	readonly loan: Loan;
 }
 
+export type ListPendingApprovalsOutput = {
+	readonly loans: LoanProductDTO[];
+}
+
+export type ApproveLoanInput = {
+	readonly loanId: LoanId;
+}
+
+export type ApproveLoanOutput = {
+	readonly loan: Loan;
+}
+
+export type RejectLoanInput = {
+	readonly loanId: LoanId;
+}
+
+export type RejectLoanOutput = {
+	readonly loan: Loan;
+}
+
 export interface LoanService {
   createLoan(input: CreateLoanInput): Promise<CreateLoanOutput>;
 	listLoans(input: ListLoansInput): Promise<ListLoansOutput>;
 	returnLoan(input: ReturnLoanInput): Promise<ReturnLoanOutput>;
+	listPendingApprovals(): Promise<ListPendingApprovalsOutput>;
+	approveLoan(input: ApproveLoanInput): Promise<ApproveLoanOutput>;
+	rejectLoan(input: RejectLoanInput): Promise<RejectLoanOutput>;
 }

@@ -4,6 +4,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Home from './pages/Home';
 import Devices from './pages/Devices';
 import Loans from './pages/Loans';
+import Approvals from './pages/Approvals';
 
 function App() {
   return (
@@ -19,6 +20,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Loans />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/approvals" 
+              element={
+                <ProtectedRoute>
+                  <Approvals />
                 </ProtectedRoute>
               } 
             />

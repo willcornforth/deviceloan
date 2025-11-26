@@ -85,10 +85,10 @@ function LoanSuccessDialog({ isOpen, onClose, loan, deviceName }: LoanSuccessDia
 
             {/* Title */}
             <h3 className="text-2xl font-bold text-center text-gray-900 mb-2">
-              Loan Confirmed!
+              Loan Created!
             </h3>
             <p className="text-center text-gray-600 mb-6">
-              Your device loan has been successfully created
+              Your device loan has been submitted for approval.
             </p>
 
             {/* Loan Details Card */}
