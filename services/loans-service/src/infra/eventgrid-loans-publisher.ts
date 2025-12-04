@@ -11,6 +11,12 @@ interface LoanEventData {
   dueDate: string;
 }
 
+interface LoanCreationFailedEventData {
+  productId: string;
+  userId: string;
+  reason: string;
+}
+
 interface EventPublisherClient {
 	send(events: Array<any>): Promise<void>;
 }
@@ -78,6 +84,28 @@ export class LoanEventPublisher {
           userId: loan.userId,
           productId: loan.productId,
           dueDate: loan.dueDate,
+        },
+      },
+    ]);
+  }
+
+  async publishLoanCreationFailed(
+    data: LoanCreationFailedEventData,
+    context?: InvocationContext
+  ) {
+    context?.log(
+      `Publishing Loan.CreationFailed event for product ID: ${data.productId}`
+    );
+
+    await this.client.send([
+      {
+        eventType: "Loan.CreationFailed",
+        subject: `loans/failed/${data.productId}`,
+        dataVersion: "1.0",
+        data: {
+          productId: data.productId,
+          userId: data.userId,
+          reason: data.reason,
         },
       },
     ]);
