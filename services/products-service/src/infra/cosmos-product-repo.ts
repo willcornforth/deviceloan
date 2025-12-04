@@ -7,7 +7,7 @@ import {
 	ProductCategory,
 	ProductStatus,
 } from '../domain/product';
-import { ProductRepo } from '../domain/product-repo';
+import { ProductRepo, ConcurrencyError } from '../domain/product-repo';
 
 // Internal DTO type for Cosmos DB container shape
 interface ProductDocument {
@@ -21,6 +21,8 @@ interface ProductDocument {
 	createdAt: string;
 	_ts?: number;
 	_etag?: string;
+	reservedBy?: string;
+	reservedAt?: string;
 }
 
 export interface CosmosProductRepoOptions {
@@ -101,6 +103,39 @@ export class CosmosProductRepo implements ProductRepo {
 		await this.container.item(id, id).delete();
 	}
 
+	async updateWithEtag(
+		product: Product,
+		etag: string
+	): Promise<Product | ConcurrencyError> {
+		const document = this.toDocument(product);
+
+		try {
+			const { resource } = await this.container
+				.item(product.id, product.id)
+				.replace(document, {
+					accessCondition: {
+						type: 'IfMatch',
+						condition: etag,
+					},
+				});
+
+			if (!resource) {
+				throw new Error('Failed to update product in Cosmos DB');
+			}
+
+			return this.toDomain(resource);
+		} catch (error: any) {
+			// 412 Precondition Failed = ETag mismatch (concurrent modification)
+			if (error.code === 412) {
+				return {
+					type: 'concurrency-error',
+					message: 'Product was modified by another request',
+				};
+			}
+			throw error;
+		}
+	}
+
 	// Mapping functions - convert between domain and DTO
 	private toDocument(product: Product): ProductDocument {
 		return {
@@ -112,6 +147,8 @@ export class CosmosProductRepo implements ProductRepo {
 			status: product.status,
 			image: product.image,
 			createdAt: product.createdAt.toISOString(),
+			reservedBy: product.reservedBy,
+			reservedAt: product.reservedAt?.toISOString(),
 		};
 	}
 
@@ -125,6 +162,11 @@ export class CosmosProductRepo implements ProductRepo {
 			status: document.status as ProductStatus,
 			image: document.image,
 			createdAt: new Date(document.createdAt),
+			_etag: document._etag,
+			reservedBy: document.reservedBy,
+			reservedAt: document.reservedAt
+				? new Date(document.reservedAt)
+				: undefined,
 		};
 	}
 }

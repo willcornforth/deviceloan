@@ -5,6 +5,7 @@ export const LoanEventTypes = {
 	Returned: 'Loan.Returned',
 	Extended: 'Loan.Extended',
 	Overdue: 'Loan.Overdue',
+	CreationFailed: 'Loan.CreationFailed',
 } as const;
 
 export type LoanEventType =
@@ -37,4 +38,10 @@ export interface LoanExtendedEventData extends BaseLoanEventData {
 export interface LoanOverdueEventData extends BaseLoanEventData {
 	readonly dueDate: string;
 	readonly daysOverdue: number;
+}
+
+// Loan.CreationFailed event data
+export interface LoanCreationFailedEventData extends BaseLoanEventData {
+	readonly reason: string;
+	readonly failedAt: string;
 }
