@@ -9,18 +9,16 @@ import { ServiceConfig } from "../infra/service-config";
 import { ResponseBuilder } from "../app/response-builder";
 import { HttpClientError } from "../infra/http-client";
 
-interface CreateLoanRequest {
-  productId: string;
+interface ReserveProductRequest {
   returnDate: string;
 }
 
-interface CreateLoanPayload {
-  productId: string;
+interface ReserveProductPayload {
   userId: string;
-  dueDate: string;
+  returnDate: string;
 }
 
-export async function createLoan(
+export async function reserveProduct(
   request: HttpRequest,
   context: InvocationContext
 ): Promise<HttpResponseInit> {
@@ -34,77 +32,69 @@ export async function createLoan(
       return error;
     }
 
-    context.log(`User ${authContext.subject} is accessing POST createLoan`);
+    // Get product ID from route parameters
+    const productId = request.params.id;
+
+    if (!productId) {
+      return ResponseBuilder.badRequest("Product ID is required");
+    }
+
+    context.log(`User ${authContext.subject} is reserving product ${productId}`);
 
     if (!authContext.subject) {
       return ResponseBuilder.unauthorized("User subject is missing in token");
     }
 
     // Validate request body
-    const body = (await request.json()) as CreateLoanRequest;
-    if (!body.productId) {
-      return ResponseBuilder.badRequest("productId is required");
-    }
+    const body = (await request.json()) as ReserveProductRequest;
 
     if (!body.returnDate) {
       return ResponseBuilder.badRequest("returnDate is required");
     }
 
-		// Calculate the due date for the loan.
-    const dueDate = new Date(body.returnDate);
+    // Calculate the return date for validation
+    const returnDate = new Date(body.returnDate);
 
     // Validate the return date is not more than 90 days from now
     const now = new Date();
     const maxReturnDate = new Date(now);
     maxReturnDate.setDate(maxReturnDate.getDate() + 90);
 
-    if (dueDate > maxReturnDate) {
+    if (returnDate > maxReturnDate) {
       return ResponseBuilder.badRequest("Return date cannot be more than 90 days from today");
     }
 
-    if (dueDate <= now) {
+    if (returnDate <= now) {
       return ResponseBuilder.badRequest("Return date must be in the future");
     }
 
-		// Create payload to send to the loans service.
-		const payload: CreateLoanPayload = {
-      productId: body.productId,
+    // Create payload to send to the products service
+    const payload: ReserveProductPayload = {
       userId: authContext.subject,
-      dueDate: dueDate.toISOString(),
+      returnDate: returnDate.toISOString(),
     };
 
-    // Get the loans service client
-    const loansService = ServiceConfig.getLoansService();
+    // Get the products service client
+    const productsService = ServiceConfig.getProductsService();
 
-    // Call the loans service
-    const loan = await loansService.request(
+    // Call the products service reserve endpoint
+    const result = await productsService.request(
       {
         method: "POST",
-        path: "/loans",
+        path: `/products/${productId}/reserve`,
         body: payload,
       },
       context
     );
 
-		// TODO: This should be done by the product service when it recieves an EventGrid response.
-		// const productService = ServiceConfig.getProductsService();
-		// productService.request(
-		// 	{
-		// 		method: "PUT",
-		// 		path: `/products/${body.productId}`,
-		// 		body: { status: "on-loan" }
-		// 	},
-		// 	context
-		// );
-
-    return ResponseBuilder.created(loan, "Loan created successfully and is pending approval");
+    return ResponseBuilder.created(result, "Product reserved successfully and loan is pending approval");
   } catch (error) {
-    context.log(`Error in createLoan: ${error}`);
+    context.log(`Error in reserveProduct: ${error}`);
 
     if (error instanceof HttpClientError) {
       return ResponseBuilder.serviceError(
         error.statusCode,
-        "Failed to create loan in upstream service"
+        "Failed to reserve product in upstream service"
       );
     }
 
@@ -116,9 +106,9 @@ export async function createLoan(
   }
 }
 
-app.http("createLoan", {
+app.http("reserveProduct", {
   methods: ["POST"],
   authLevel: "anonymous",
-  route: "loans",
-  handler: createLoan,
+  route: "products/{id}/reserve",
+  handler: reserveProduct,
 });
