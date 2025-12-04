@@ -9,7 +9,7 @@ import {
 } from '@azure/functions';
 import { getProductRepo } from '../config/appServices';
 import { reserveProduct, ReserveProductParams } from '../app/reserve-product';
-import { ProductEventPublisher } from '../infra/eventgrid-products-publisher';
+import { productEventPublisher } from '../infra/eventgrid-products-publisher';
 
 interface ErrorResponse {
 	readonly error: string;
@@ -50,7 +50,7 @@ export async function reserveProductHttp(
 		}
 
 		const repo = getProductRepo();
-		const result = await reserveProduct({ repo, productId, params, eventPublisher: new ProductEventPublisher() });
+		const result = await reserveProduct({ repo, productId, params, eventPublisher: productEventPublisher });
 
 		if (result.success === true) {
 			return {

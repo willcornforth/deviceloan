@@ -67,3 +67,5 @@ export class ProductEventPublisher {
 		await this.client.send([event]);
 	}
 }
+
+export const productEventPublisher = new ProductEventPublisher();
