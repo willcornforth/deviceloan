@@ -68,14 +68,13 @@ export class HttpLoanService implements LoanService {
       );
     }
 
-    const response = await fetch(`${baseUrl}/loans`, {
+    const response = await fetch(`${baseUrl}/products/${input.productId}/reserve`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${this.token}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        productId: input.productId,
         returnDate: input.returnDate.toISOString(),
       }),
     });

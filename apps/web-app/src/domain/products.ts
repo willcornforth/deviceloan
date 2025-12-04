@@ -9,7 +9,7 @@ export type ProductCategory =
   | 'monitor'
   | 'accessory';
 
-export type ProductStatus = 'available' | 'on-loan' | 'maintenance' | 'retired';
+export type ProductStatus = 'available' | 'reserved' | 'on-loan' | 'maintenance' | 'retired';
 
 export interface Product {
   readonly id: ProductId;
@@ -20,6 +20,7 @@ export interface Product {
   readonly status: ProductStatus;
   readonly image?: string;
   readonly createdAt: Date;
+  readonly _etag?: string;
 }
 
 export interface CreateProductParams {
