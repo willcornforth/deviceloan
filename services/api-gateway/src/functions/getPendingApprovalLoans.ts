@@ -8,6 +8,7 @@ import { AuthMiddleware } from "../app/auth-middleware";
 import { ServiceConfig } from "../infra/service-config";
 import { ResponseBuilder } from "../app/response-builder";
 import { HttpClientError } from "../infra/http-client";
+import { getProductRepo } from "../infra/cosmos-product-repo";
 
 export async function getPendingApprovalLoans(
 	request: HttpRequest,
@@ -47,28 +48,23 @@ export async function getPendingApprovalLoans(
 			context
 		);
 
-		// Get product service client.
-		const productsService = ServiceConfig.getProductsService();
+		// Get product repository to fetch product details from local projection
+		const productRepo = getProductRepo();
 
 		// TODO: Send loans as an array and fetch multiple.
 		// Enrich loans with product details
 		const loansWithProducts = await Promise.all(
 			loans.map(async (loan) => {
 				try {
-					const response: any = await productsService.request(
-						{
-							method: "GET",
-							path: `/products/${loan.productId}`,
-						},
-						context
-					);
+					const product = await productRepo.getById(loan.productId);
 
-					// Handle both cases where the product is wrapped in a 'product' field or returned directly
-					const product = response?.product ?? response;
+					if (!product) {
+						context.warn(`Product ${loan.productId} not found in projection`);
+					}
 
 					return { ...loan, product };
 				} catch (err) {
-					context.log(`Failed to fetch product ${loan.productId}: ${err}`);
+					context.error(`Failed to fetch product ${loan.productId} from projection: ${err}`);
 					return { ...loan, product: null };
 				}
 			})

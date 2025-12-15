@@ -8,7 +8,15 @@
     "PRODUCTS_SERVICE_BASE_URL": "http://localhost:7072/api",
     "PRODUCTS_SERVICE_HOST_KEY": "",
     "LOANS_SERVICE_BASE_URL": "http://localhost:7073/api",
-    "LOANS_SERVICE_HOST_KEY": ""
+    "LOANS_SERVICE_HOST_KEY": "",
+    "COSMOS_ENDPOINT": "https://your-account.documents.azure.com:443/",
+    "COSMOS_KEY": "your-cosmos-key-here",
+    "COSMOS_DATABASE_ID": "device-loan",
+    "COSMOS_PRODUCTS_CONTAINER_ID": "products",
+    "SOURCE_COSMOS_ENDPOINT": "https://products-service-account.documents.azure.com:443/",
+    "SOURCE_COSMOS_KEY": "source-cosmos-key-here",
+    "SOURCE_COSMOS_DATABASE_ID": "device-loan",
+    "SOURCE_COSMOS_CONTAINER_ID": "products"
   },
   "Host": {
     "CORS": "*",

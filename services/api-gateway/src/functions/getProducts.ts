@@ -1,38 +1,23 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
-import { ServiceConfig } from '../infra/service-config';
 import { ResponseBuilder } from '../app/response-builder';
-import { HttpClientError } from '../infra/http-client';
+import { getProductRepo } from '../infra/cosmos-product-repo';
 
 export async function getProducts(
 	request: HttpRequest,
 	context: InvocationContext
 ): Promise<HttpResponseInit> {
 	try {
-		// Get the products service client
-		const productsService = ServiceConfig.getProductsService();
+		// Get products from local Cosmos DB projection
+		const productRepo = getProductRepo();
+		const products = await productRepo.list();
 
-		// Call the products service
-		const products = await productsService.request({
-			method: 'GET',
-			path: '/products',
-		}, context);
+		context.log(`Retrieved ${products.length} products from local projection`);
 
 		return ResponseBuilder.success(products, 'Products retrieved successfully');
 	} catch (error) {
 		context.log(`Error in getProducts: ${error}`);
 
-		if (error instanceof HttpClientError) {
-			return ResponseBuilder.serviceError(
-				error.statusCode,
-				'Failed to retrieve products from upstream service'
-			);
-		}
-
-		if (error.message?.includes('not configured')) {
-			return ResponseBuilder.internalError(error.message);
-		}
-
-		return ResponseBuilder.badGateway('Unable to connect to products service');
+		return ResponseBuilder.internalError('Failed to retrieve products from database');
 	}
 }
 

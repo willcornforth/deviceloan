@@ -8,6 +8,7 @@ import { AuthMiddleware } from "../app/auth-middleware";
 import { ServiceConfig } from "../infra/service-config";
 import { ResponseBuilder } from "../app/response-builder";
 import { HttpClientError } from "../infra/http-client";
+import { getProductRepo } from "../infra/cosmos-product-repo";
 
 export async function listLoansByUserId(
 	request: HttpRequest,
@@ -53,27 +54,22 @@ export async function listLoansByUserId(
 			context
 		);
 
-		// Get the products service client to fetch product details
-		const productsService = ServiceConfig.getProductsService();
+		// Get product repository to fetch product details from local projection
+		const productRepo = getProductRepo();
 
-		// Fetch product details for each loan
+		// Fetch product details for each loan from local Cosmos DB projection
 		const loansWithProducts = await Promise.all(
 			loans.map(async (loan) => {
 				try {
-					const response: any = await productsService.request(
-						{
-							method: "GET",
-							path: `/products/${loan.productId}`,
-						},
-						context
-					);
+					const product = await productRepo.getById(loan.productId);
 
-					// Handle both cases where the product is wrapped in a 'product' field or returned directly
-					const product = response?.product ?? response;
+					if (!product) {
+						context.warn(`Product ${loan.productId} not found in projection`);
+					}
 
 					return { ...loan, product };
 				} catch (err) {
-					context.log(`Failed to fetch product ${loan.productId}: ${err}`);
+					context.error(`Failed to fetch product ${loan.productId} from projection: ${err}`);
 					return { ...loan, product: null };
 				}
 			})
