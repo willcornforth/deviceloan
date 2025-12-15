@@ -7,7 +7,7 @@ import {
 	InvocationContext,
 } from '@azure/functions';
 import { randomUUID } from 'crypto';
-import { getProductRepo } from '../config/appServices';
+import { getProductRepo, getProductEventPublisher } from '../config/appServices';
 import { createProductUseCase } from '../app/create-product';
 
 interface ErrorResponse {
@@ -50,9 +50,11 @@ export async function createProductHttp(
 		}
 
 		const repo = getProductRepo();
+		const publisher = getProductEventPublisher();
 
 		const result = await createProductUseCase({
 			repo,
+			publisher,
 			params: {
 				id: (body.id as string) ?? randomUUID(),
 				name: body.name as string,

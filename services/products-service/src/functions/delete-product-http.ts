@@ -6,7 +6,7 @@ import {
 	HttpResponseInit,
 	InvocationContext,
 } from '@azure/functions';
-import { getProductRepo } from '../config/appServices';
+import { getProductRepo, getProductEventPublisher } from '../config/appServices';
 import { deleteProduct } from '../app/delete-product';
 
 interface ErrorResponse {
@@ -41,7 +41,8 @@ export async function deleteProductHttp(
 		}
 
 		const repo = getProductRepo();
-		const result = await deleteProduct({ repo, id });
+		const publisher = getProductEventPublisher();
+		const result = await deleteProduct({ repo, publisher, id });
 
 		if (!result.success) {
 			return createErrorResponse(

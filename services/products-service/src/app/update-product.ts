@@ -7,6 +7,7 @@ import {
 	ProductStatus,
 } from '../domain/product';
 import { ProductRepo } from '../domain/product-repo';
+import { ProductEventPublisher } from '../infra/eventgrid-products-publisher';
 
 export interface UpdateProductParams {
 	readonly name?: string;
@@ -20,6 +21,7 @@ export interface UpdateProductDeps {
 	readonly repo: ProductRepo;
 	readonly id: ProductId;
 	readonly params: UpdateProductParams;
+	readonly publisher: ProductEventPublisher;
 }
 
 export interface UpdateProductSuccess {
@@ -53,5 +55,9 @@ export const updateProduct = async (
 	};
 
 	const savedProduct = await deps.repo.update(updated);
+	
+	// Publish event for projections
+	await deps.publisher.publishProductUpdated(savedProduct);
+	
 	return { success: true, product: savedProduct };
 };

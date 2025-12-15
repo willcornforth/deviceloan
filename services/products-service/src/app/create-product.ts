@@ -8,10 +8,12 @@ import {
 	createProduct as createProductDomain,
 } from '../domain/product';
 import { ProductRepo } from '../domain/product-repo';
+import { ProductEventPublisher } from '../infra/eventgrid-products-publisher';
 
 export interface CreateProductDeps {
 	readonly repo: ProductRepo;
 	readonly params: CreateProductParams;
+	readonly publisher: ProductEventPublisher;
 }
 
 export interface CreateProductSuccess {
@@ -36,5 +38,9 @@ export const createProductUseCase = async (
 	}
 
 	const savedProduct = await deps.repo.create(result.product);
+	
+	// Publish event for projections
+	await deps.publisher.publishProductCreated(savedProduct);
+	
 	return { success: true, product: savedProduct };
 };

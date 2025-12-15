@@ -2,8 +2,12 @@ import {
 	EventGridPublisherClient,
 	AzureKeyCredential,
 } from "@azure/eventgrid";
+import { Product } from "../domain/product";
 
 export const ProductEventTypes = {
+	Created: 'Product.Created',
+	Updated: 'Product.Updated',
+	Deleted: 'Product.Deleted',
 	Reserved: 'Product.Reserved',
 	Released: 'Product.Released',
 } as const;
@@ -18,6 +22,19 @@ export interface ProductReservedEventData {
 	readonly reservedBy: string;
 	readonly reservedAt: string;
 	readonly returnDate: string;
+}
+
+export interface ProductEventData {
+	readonly productId: string;
+	readonly productName: string;
+	readonly serialNumber: string;
+	readonly description: string;
+	readonly category: string;
+	readonly status: string;
+	readonly image?: string;
+	readonly createdAt: string;
+	readonly reservedBy?: string;
+	readonly reservedAt?: string;
 }
 
 interface EventPublisherClient {
@@ -56,10 +73,86 @@ export class ProductEventPublisher {
 		this.client = client || new AzureEventGridPublisherClient();
 	}
 
+	async publishProductCreated(product: Product): Promise<void> {
+		const data: ProductEventData = {
+			productId: product.id,
+			productName: product.name,
+			serialNumber: product.serialNumber,
+			description: product.description,
+			category: product.category,
+			status: product.status,
+			image: product.image,
+			createdAt: product.createdAt.toISOString(),
+		};
+
+		const event = {
+			eventType: ProductEventTypes.Created,
+			subject: `products/${product.id}`,
+			dataVersion: '1.0',
+			data,
+		};
+
+		await this.client.send([event]);
+	}
+
+	async publishProductUpdated(product: Product): Promise<void> {
+		const data: ProductEventData = {
+			productId: product.id,
+			productName: product.name,
+			serialNumber: product.serialNumber,
+			description: product.description,
+			category: product.category,
+			status: product.status,
+			image: product.image,
+			createdAt: product.createdAt.toISOString(),
+			reservedBy: product.reservedBy,
+			reservedAt: product.reservedAt?.toISOString(),
+		};
+
+		const event = {
+			eventType: ProductEventTypes.Updated,
+			subject: `products/${product.id}`,
+			dataVersion: '1.0',
+			data,
+		};
+
+		await this.client.send([event]);
+	}
+
+	async publishProductDeleted(productId: string): Promise<void> {
+		const data = {
+			productId,
+		};
+
+		const event = {
+			eventType: ProductEventTypes.Deleted,
+			subject: `products/${productId}`,
+			dataVersion: '1.0',
+			data,
+		};
+
+		await this.client.send([event]);
+	}
+
 	async publishProductReserved(data: ProductReservedEventData): Promise<void> {
 		const event = {
 			eventType: ProductEventTypes.Reserved,
 			subject: `products/${data.productId}`,
+			dataVersion: '1.0',
+			data,
+		};
+
+		await this.client.send([event]);
+	}
+
+	async publishProductReleased(productId: string): Promise<void> {
+		const data = {
+			productId,
+		};
+
+		const event = {
+			eventType: ProductEventTypes.Released,
+			subject: `products/${productId}`,
 			dataVersion: '1.0',
 			data,
 		};

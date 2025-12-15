@@ -6,7 +6,7 @@ import {
 	HttpResponseInit,
 	InvocationContext,
 } from '@azure/functions';
-import { getProductRepo } from '../config/appServices';
+import { getProductRepo, getProductEventPublisher } from '../config/appServices';
 import { updateProduct } from '../app/update-product';
 
 interface ErrorResponse {
@@ -51,9 +51,11 @@ export async function updateProductHttp(
 		}
 
 		const repo = getProductRepo();
+		const publisher = getProductEventPublisher();
 
 		const result = await updateProduct({
 			repo,
+			publisher,
 			id,
 			params: {
 				name: body.name as string | undefined,

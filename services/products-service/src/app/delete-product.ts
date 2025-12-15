@@ -2,10 +2,12 @@
 
 import { ProductId } from '../domain/product';
 import { ProductRepo } from '../domain/product-repo';
+import { ProductEventPublisher } from '../infra/eventgrid-products-publisher';
 
 export interface DeleteProductDeps {
 	readonly repo: ProductRepo;
 	readonly id: ProductId;
+	readonly publisher: ProductEventPublisher;
 }
 
 export interface DeleteProductSuccess {
@@ -29,5 +31,9 @@ export const deleteProduct = async (
 	}
 
 	await deps.repo.delete(deps.id);
+	
+	// Publish event for projections
+	await deps.publisher.publishProductDeleted(deps.id);
+	
 	return { success: true };
 };
