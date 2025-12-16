@@ -30,7 +30,7 @@ async function handler(
 
 app.http("listPendingApprovalLoansHttp", {
   methods: ["GET"],
-  authLevel: "anonymous",
+  authLevel: "function",
   route: "loans/status/pending-approval",
   handler,
 });

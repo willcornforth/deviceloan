@@ -53,7 +53,7 @@ async function handler(
 
 app.http("rejectLoanHttp", {
   methods: ["POST"],
-  authLevel: "anonymous",
+  authLevel: "function",
   route: "loans/{id}/reject",
   handler,
 });

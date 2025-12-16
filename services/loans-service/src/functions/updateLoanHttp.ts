@@ -61,7 +61,7 @@ async function handler(
 
 app.http("updateLoanHttp", {
   methods: ["PATCH"],
-  authLevel: "anonymous",
+  authLevel: "function",
   route: "loans/{id}",
   handler,
 });

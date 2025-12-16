@@ -39,7 +39,7 @@ async function handler(
 
 app.http("listLoansByUserIdHttp", {
   methods: ["GET"],
-  authLevel: "anonymous",
+  authLevel: "function",
   route: "users/{userId}/loans",
   handler,
 });

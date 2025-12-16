@@ -45,7 +45,7 @@ async function handler(
 
 app.http("deleteLoanHttp", {
   methods: ["DELETE"],
-  authLevel: "anonymous",
+  authLevel: "function",
   route: "loans/{id}",
   handler,
 });

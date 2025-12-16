@@ -82,7 +82,7 @@ async function handler(
 
 app.http("approveLoanHttp", {
 	methods: ["POST"],
-	authLevel: "anonymous",
+	authLevel: "function",
 	route: "loans/{id}/approve",
 	handler,
 });
