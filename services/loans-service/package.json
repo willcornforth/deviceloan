@@ -9,7 +9,12 @@
     "clean": "rimraf dist",
     "prestart": "npm run build",
     "start": "func start",
-    "test": "echo \"No tests yet...\"",
+    "test": "vitest run",
+    "test:unit": "vitest run src/__tests__/unit",
+    "test:integration": "vitest run src/__tests__/integration",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage",
     "format": "prettier --write \"src/**/*.ts\"",
     "format:check": "prettier --check \"src/**/*.ts\""
   },
@@ -20,9 +25,11 @@
   },
   "devDependencies": {
     "@types/node": "^20.x",
+    "@vitest/ui": "^4.0.15",
     "azure-functions-core-tools": "^4.x",
     "prettier": "^3.6.2",
     "rimraf": "^6.0.1",
-    "typescript": "^5.6.3"
+    "typescript": "^5.6.3",
+    "vitest": "^4.0.15"
   }
 }
