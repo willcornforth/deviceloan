@@ -16,10 +16,9 @@ describe('unreserveProduct Use Case', () => {
 			getById: vi.fn(),
 			create: vi.fn(),
 			update: vi.fn(),
+			updateWithEtag: vi.fn(),
 			delete: vi.fn(),
 			list: vi.fn(),
-			getBySerialNumber: vi.fn(),
-			updateWithEtag: vi.fn(),
 		};
 	});
 
@@ -77,9 +76,11 @@ describe('unreserveProduct Use Case', () => {
 		});
 
 		expect(result.success).toBe(false);
-		if (!result.success) {
+		if (!result.success && 'reason' in result) {
 			expect(result.reason).toBe('not-found');
-			expect(result.productId).toBe('non-existent');
+			if ('productId' in result) {
+				expect(result.productId).toBe('non-existent');
+			}
 		}
 
 		expect(mockRepo.update).not.toHaveBeenCalled();

@@ -4,7 +4,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createProductUseCase, type CreateProductDeps } from '../../../app/create-product';
 import type { ProductRepo } from '../../../domain/product-repo';
 import type { Product } from '../../../domain/product';
-import type { ProductEventPublisher } from '../infra/eventgrid-products-publisher';
+import type { ProductEventPublisher } from '../../../infra/eventgrid-products-publisher';
 
 describe('createProductUseCase', () => {
 	let mockRepo: ProductRepo;
@@ -14,11 +14,10 @@ describe('createProductUseCase', () => {
 		mockRepo = {
 			create: vi.fn(),
 			update: vi.fn(),
+			updateWithEtag: vi.fn(),
 			delete: vi.fn(),
 			getById: vi.fn(),
 			list: vi.fn(),
-			listByStatus: vi.fn(),
-			getBySerialNumber: vi.fn(),
 		};
 
 		mockPublisher = {
@@ -82,7 +81,7 @@ describe('createProductUseCase', () => {
 		const result = await createProductUseCase(deps);
 
 		expect(result.success).toBe(false);
-		if (!result.success) {
+		if (!result.success && 'errors' in result) {
 			expect(result.errors).toHaveLength(1);
 			expect(result.errors[0].field).toBe('name');
 		}

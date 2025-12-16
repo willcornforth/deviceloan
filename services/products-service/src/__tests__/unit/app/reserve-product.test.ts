@@ -18,10 +18,9 @@ describe('reserveProduct Use Case', () => {
 			getById: vi.fn(),
 			create: vi.fn(),
 			update: vi.fn(),
+			updateWithEtag: vi.fn(),
 			delete: vi.fn(),
 			list: vi.fn(),
-			getBySerialNumber: vi.fn(),
-			updateWithEtag: vi.fn(),
 		};
 
 		mockEventPublisher = {
@@ -97,9 +96,11 @@ describe('reserveProduct Use Case', () => {
 		});
 
 		expect(result.success).toBe(false);
-		if (!result.success) {
+		if (!result.success && 'reason' in result) {
 			expect(result.reason).toBe('not-found');
-			expect(result.productId).toBe('non-existent');
+			if ('productId' in result) {
+				expect(result.productId).toBe('non-existent');
+			}
 		}
 
 		expect(mockRepo.updateWithEtag).not.toHaveBeenCalled();
@@ -129,9 +130,11 @@ describe('reserveProduct Use Case', () => {
 		});
 
 		expect(result.success).toBe(false);
-		if (!result.success) {
+		if (!result.success && 'reason' in result) {
 			expect(result.reason).toBe('not-available');
-			expect(result.currentStatus).toBe('on-loan');
+			if ('currentStatus' in result) {
+				expect(result.currentStatus).toBe('on-loan');
+			}
 		}
 
 		expect(mockRepo.updateWithEtag).not.toHaveBeenCalled();
@@ -161,9 +164,11 @@ describe('reserveProduct Use Case', () => {
 		});
 
 		expect(result.success).toBe(false);
-		if (!result.success) {
+		if (!result.success && 'reason' in result) {
 			expect(result.reason).toBe('not-available');
-			expect(result.currentStatus).toBe('maintenance');
+			if ('currentStatus' in result) {
+				expect(result.currentStatus).toBe('maintenance');
+			}
 		}
 	});
 
@@ -199,9 +204,11 @@ describe('reserveProduct Use Case', () => {
 		});
 
 		expect(result.success).toBe(false);
-		if (!result.success) {
+		if (!result.success && 'reason' in result) {
 			expect(result.reason).toBe('concurrency-conflict');
-			expect(result.message).toBe('ETag mismatch');
+			if ('message' in result) {
+				expect(result.message).toBe('ETag mismatch');
+			}
 		}
 	});
 

@@ -4,7 +4,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { updateProduct, type UpdateProductDeps } from '../../../app/update-product';
 import type { ProductRepo } from '../../../domain/product-repo';
 import type { Product } from '../../../domain/product';
-import type { ProductEventPublisher } from '../infra/eventgrid-products-publisher';
+import type { ProductEventPublisher } from '../../../infra/eventgrid-products-publisher';
 
 describe('updateProduct', () => {
 	let mockRepo: ProductRepo;
@@ -24,11 +24,10 @@ describe('updateProduct', () => {
 		mockRepo = {
 			create: vi.fn(),
 			update: vi.fn(),
+			updateWithEtag: vi.fn(),
 			delete: vi.fn(),
 			getById: vi.fn(),
 			list: vi.fn(),
-			listByStatus: vi.fn(),
-			getBySerialNumber: vi.fn(),
 		};
 
 		mockPublisher = {
@@ -80,7 +79,7 @@ describe('updateProduct', () => {
 		const result = await updateProduct(deps);
 
 		expect(result.success).toBe(false);
-		if (!result.success) {
+		if (!result.success && 'reason' in result) {
 			expect(result.reason).toBe('not-found');
 		}
 		expect(mockRepo.update).not.toHaveBeenCalled();

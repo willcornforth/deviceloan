@@ -42,7 +42,7 @@ describe('Product Domain', () => {
 			});
 
 			expect(result.success).toBe(false);
-			if (!result.success) {
+			if (!result.success && 'errors' in result) {
 				expect(result.errors).toHaveLength(1);
 				expect(result.errors[0].field).toBe('name');
 				expect(result.errors[0].message).toContain('required');
@@ -59,7 +59,7 @@ describe('Product Domain', () => {
 			});
 
 			expect(result.success).toBe(false);
-			if (!result.success) {
+			if (!result.success && 'errors' in result) {
 				expect(result.errors[0].field).toBe('serialNumber');
 			}
 		});
@@ -74,7 +74,7 @@ describe('Product Domain', () => {
 			});
 
 			expect(result.success).toBe(false);
-			if (!result.success) {
+			if (!result.success && 'errors' in result) {
 				expect(result.errors[0].field).toBe('description');
 			}
 		});

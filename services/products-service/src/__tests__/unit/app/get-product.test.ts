@@ -13,10 +13,9 @@ describe('getProduct Use Case', () => {
 			getById: vi.fn(),
 			create: vi.fn(),
 			update: vi.fn(),
+			updateWithEtag: vi.fn(),
 			delete: vi.fn(),
 			list: vi.fn(),
-			getBySerialNumber: vi.fn(),
-			updateWithEtag: vi.fn(),
 		};
 	});
 
