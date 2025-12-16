@@ -18,7 +18,7 @@ describe('createLoan Use Case', () => {
 			delete: vi.fn(),
 			listByUserId: vi.fn(),
 			listByProductId: vi.fn(),
-			listByStatus: vi.fn(),
+			listPendingApproval: vi.fn(),
 		};
 
 		createLoanUseCase = createLoan(mockRepo);

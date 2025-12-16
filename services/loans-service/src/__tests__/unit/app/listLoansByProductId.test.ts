@@ -18,7 +18,7 @@ describe('listLoansByProductId Use Case', () => {
 			delete: vi.fn(),
 			listByUserId: vi.fn(),
 			listByProductId: vi.fn(),
-			listByStatus: vi.fn(),
+			listPendingApproval: vi.fn(),
 		};
 
 		listLoansByProductIdUseCase = listLoansByProductId(mockRepo);
