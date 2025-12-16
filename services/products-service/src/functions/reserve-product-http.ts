@@ -113,6 +113,6 @@ export async function reserveProductHttp(
 app.http('reserveProductHttp', {
 	methods: ['POST'],
 	route: 'products/{id}/reserve',
-	authLevel: 'anonymous',
+	authLevel: 'function',
 	handler: reserveProductHttp,
 });

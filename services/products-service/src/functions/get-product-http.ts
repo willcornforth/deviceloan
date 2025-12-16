@@ -77,6 +77,6 @@ export async function getProductHttp(
 app.http('getProductHttp', {
 	methods: ['GET'],
 	route: 'products/{id}',
-	authLevel: 'anonymous',
+	authLevel: 'function',
 	handler: getProductHttp,
 });

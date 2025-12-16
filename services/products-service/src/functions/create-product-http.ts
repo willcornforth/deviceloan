@@ -101,6 +101,6 @@ export async function createProductHttp(
 app.http('createProductHttp', {
 	methods: ['POST'],
 	route: 'products',
-	authLevel: 'anonymous',
+	authLevel: 'function',
 	handler: createProductHttp,
 });

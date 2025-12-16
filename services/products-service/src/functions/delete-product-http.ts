@@ -78,6 +78,6 @@ export async function deleteProductHttp(
 app.http('deleteProductHttp', {
 	methods: ['DELETE'],
 	route: 'products/{id}',
-	authLevel: 'anonymous',
+	authLevel: 'function',
 	handler: deleteProductHttp,
 });

@@ -100,6 +100,6 @@ export async function updateProductHttp(
 app.http('updateProductHttp', {
 	methods: ['PUT', 'PATCH'],
 	route: 'products/{id}',
-	authLevel: 'anonymous',
+	authLevel: 'function',
 	handler: updateProductHttp,
 });
