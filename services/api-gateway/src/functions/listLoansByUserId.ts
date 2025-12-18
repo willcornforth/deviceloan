@@ -8,7 +8,7 @@ import { AuthMiddleware } from "../app/auth-middleware";
 import { ServiceConfig } from "../infra/service-config";
 import { ResponseBuilder } from "../app/response-builder";
 import { HttpClientError } from "../infra/http-client";
-import { getProductRepo } from "../infra/cosmos-product-repo";
+import { getProductRepo } from "../config/appServices";
 
 export async function listLoansByUserId(
 	request: HttpRequest,

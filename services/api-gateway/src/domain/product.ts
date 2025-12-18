@@ -11,6 +11,11 @@ export type ProductCategory =
 
 export type ProductStatus = 'available' | 'reserved' | 'on-loan' | 'maintenance' | 'retired';
 
+export interface ConcurrencyError {
+	readonly type: 'concurrency-error';
+	readonly message: string;
+}
+
 export interface Product {
 	readonly id: ProductId;
 	readonly name: string;
@@ -20,14 +25,20 @@ export interface Product {
 	readonly status: ProductStatus;
 	readonly image?: string;
 	readonly createdAt: Date;
+	readonly _etag?: string;
 	readonly reservedBy?: string;
 	readonly reservedAt?: Date;
 }
 
 export interface ProductRepo {
-	create(product: Product): Promise<Product>;
-	update(product: Product): Promise<Product>;
-	delete(id: ProductId): Promise<void>;
-	getById(id: ProductId): Promise<Product | null>;
-	list(): Promise<Product[]>;
+	readonly create: (product: Product) => Promise<Product>;
+	readonly getById: (id: ProductId) => Promise<Product | null>;
+	readonly list: (availableOnly: boolean) => Promise<readonly Product[]>;
+	readonly update: (product: Product) => Promise<Product>;
+	readonly updateWithEtag: (
+		product: Product,
+		etag: string
+	) => Promise<Product | ConcurrencyError>;
+	readonly delete: (id: ProductId) => Promise<void>;
 }
+

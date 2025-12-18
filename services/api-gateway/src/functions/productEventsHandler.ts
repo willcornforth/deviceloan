@@ -1,8 +1,8 @@
 // Event Grid handler for product events - synchronizes the product projection
 
 import { app, InvocationContext, EventGridEvent as AzureEventGridEvent } from '@azure/functions';
-import { getProductRepo } from '../infra/cosmos-product-repo';
 import { Product } from '../domain/product';
+import { getProductRepo } from '../config/appServices';
 
 // Event types published by the Products Service
 const ProductEventTypes = {
