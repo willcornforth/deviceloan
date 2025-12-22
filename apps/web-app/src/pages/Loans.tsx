@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import PageBanner from '../components/PageBanner';
 import TabSwitch from '../components/TabSwitch';
 import LoanCard from '../components/LoanCard';

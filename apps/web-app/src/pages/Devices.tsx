@@ -14,7 +14,7 @@ import LoanSuccessDialog from "../components/LoanSuccessDialog";
 import { useProducts } from "../hooks/useProducts";
 import { useLoanService } from "../hooks/useLoanService";
 import { Product } from "../app/product-service";
-import { Loan } from "../app/loan-service";
+import { Loan } from "../domain/loans";
 
 function Devices() {
   const { products: devices, loading, error } = useProducts();
