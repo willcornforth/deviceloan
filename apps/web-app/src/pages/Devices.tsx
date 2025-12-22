@@ -75,6 +75,10 @@ function Devices() {
   };
 
   const filteredDevices = useMemo(() => {
+    if (!devices || !Array.isArray(devices)) {
+      return [];
+    }
+    
     return devices.filter((device) => {
       const matchesSearch =
         device.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
