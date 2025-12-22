@@ -90,12 +90,11 @@ export class HttpLoanService implements LoanService {
 
     const json = await response.json();
 
-    // The reserve endpoint returns the reserved product, not a loan
-    // The loan will be created asynchronously via event handlers
-    const productData = json.product;
+    // The API Gateway wraps the response in { message, data: { message, product } }
+    const responseData = json.data;
     return {
-      product: productData,
-      message: json.message,
+      product: responseData.product,
+      message: responseData.message || json.message,
     };
   }
 
