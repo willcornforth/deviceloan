@@ -5,7 +5,7 @@ import {
   InvocationContext,
 } from "@azure/functions";
 import { ResponseBuilder } from "../app/response-builder";
-import { getProductRepo } from "../infra/cosmos-product-repo";
+import { getProductRepo } from "../config/appServices";
 import { AuthMiddleware } from "../app/auth-middleware";
 
 export async function listProducts(
@@ -46,18 +46,13 @@ export async function listProducts(
 
     const productRepo = getProductRepo();
     const availableOnly = request.query.get('availableOnly') === 'true';
-
-    const products = await productRepo.list();
-    const filteredProducts = availableOnly 
-      ? products.filter(p => p.status === 'available')
-      : products;
-
-    context.log(`Retrieved ${filteredProducts.length} products from local projection`);
+    const products = await productRepo.list(availableOnly);
+    context.log(`Retrieved ${products.length} products from local projection`);
 
     const output = {
       availableOnly,
-      products: filteredProducts,
-      count: filteredProducts.length
+      products,
+      count: products.length
     };
 
     return ResponseBuilder.success(output, "Products retrieved successfully");
