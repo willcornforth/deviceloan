@@ -18,6 +18,10 @@ export default defineConfig({
 			],
 		},
 		include: ['src/__tests__/**/*.{test,spec}.ts'],
-		exclude: ['node_modules', 'dist'],
+		exclude: [
+			'node_modules',
+			'dist',
+			'src/__tests__/integration/**', //Exclude these for the time being as they require additional setup
+		],
 	},
 });
