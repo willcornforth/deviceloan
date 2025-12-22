@@ -4,6 +4,7 @@
 import { app, EventGridEvent, InvocationContext } from '@azure/functions';
 import { getProductRepo } from '../config/appServices';
 import { handleLoanRejected, LoanRejectedEvent } from '../app/handle-loan-rejected';
+import { getProductEventPublisher } from '../config/appServices';
 
 interface LoanRejectedEventData {
 	readonly id: string;
@@ -38,6 +39,14 @@ async function handler(
 		context.log(
 			`Successfully unreserved product ${eventData.productId} after loan rejection`
 		);
+
+		// Publish Product.Released event to update the API Gateway projection
+		const updatedProduct = await repo.getById(eventData.productId);
+		if (updatedProduct) {
+			const publisher = getProductEventPublisher();
+			await publisher.publishProductReleased(updatedProduct);
+			context.log(`Published Product.Released event for ${eventData.productId}`);
+		}
 	} catch (error) {
 		context.error('Error handling Loan.Rejected event:', error);
 		throw error; // Rethrow to trigger Event Grid retry
