@@ -78,7 +78,10 @@ export async function reserveProduct(
     const productsService = ServiceConfig.getProductsService();
 
     // Call the products service reserve endpoint
-    const result = await productsService.request(
+    const result = await productsService.request<{
+      message: string;
+      product: any;
+    }>(
       {
         method: "POST",
         path: `/products/${productId}/reserve`,
@@ -87,9 +90,8 @@ export async function reserveProduct(
       context
     );
 
-		// We don't need to build a response here as the upstream service response
-		// does this for us.
-    return result;
+    // Return the product reservation details
+    return ResponseBuilder.success(result, "Product reserved successfully");
   } catch (error) {
     context.log(`Error in reserveProduct: ${error}`);
 
