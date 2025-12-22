@@ -13,37 +13,8 @@ export async function listProducts(
   context: InvocationContext
 ): Promise<HttpResponseInit> {
   try {
-    // Authenticate the user
-    const { authContext, error } = await AuthMiddleware.authenticate(
-      request,
-      context
-    );
-    if (error) {
-      return error;
-    }
 
-    // Get userId from route parameters
-    const userId = request.params.userId;
-
-    if (!userId) {
-      return ResponseBuilder.badRequest("userId is required");
-    }
-
-    context.log(
-      `User ${authContext.subject} is accessing GET products for user ${userId}`
-    );
-
-    if (authContext.subject !== userId) {
-      const permissionError = AuthMiddleware.requirePermission(
-        authContext,
-        "read:products",
-        context
-      );
-      if (permissionError) {
-        return permissionError;
-      }
-    }
-
+		// No authentication here as this is just to view the products available.
     const productRepo = getProductRepo();
     const availableOnly = request.query.get('availableOnly') === 'true';
 
@@ -61,7 +32,7 @@ export async function listProducts(
   }
 }
 
-app.http("getProducts", {
+app.http("listProducts", {
   methods: ["GET"],
   authLevel: "anonymous",
   route: "products",
