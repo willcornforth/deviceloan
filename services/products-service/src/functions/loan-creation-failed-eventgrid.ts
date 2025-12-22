@@ -2,7 +2,7 @@
 // Unreserves the product when loan creation fails
 
 import { app, EventGridEvent, InvocationContext } from '@azure/functions';
-import { getProductRepo } from '../config/appServices';
+import { getProductRepo, getProductEventPublisher } from '../config/appServices';
 import { unreserveProduct } from '../app/unreserve-product';
 import {
 	LoanEventTypes,
@@ -43,6 +43,11 @@ export async function loanCreationFailedHandler(
 				context.log(
 					`Product ${eventData.productId} unreserved successfully`
 				);
+				
+				// Publish Product.Released event to update the API Gateway projection
+				const publisher = getProductEventPublisher();
+				await publisher.publishProductReleased(result.product);
+				context.log(`Published Product.Released event for ${eventData.productId}`);
 			} else {
 				context.log(
 					`Product ${eventData.productId} was not reserved (status: ${result.product.status})`

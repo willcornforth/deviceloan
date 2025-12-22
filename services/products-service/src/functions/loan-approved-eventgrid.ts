@@ -1,7 +1,7 @@
 // Azure Function v4 - EventGrid subscriber for Loan.Created events
 
 import { app, EventGridEvent, InvocationContext } from '@azure/functions';
-import { getProductRepo } from '../config/appServices';
+import { getProductRepo, getProductEventPublisher } from '../config/appServices';
 import {
 	handleLoanApproved,
 	LoanApprovedEvent,
@@ -43,6 +43,14 @@ export async function loanApprovedHandler(
 
 		if (result.success === true) {
 			context.log(`Product ${result.productId} status updated to on-loan`);
+			
+			// Publish Product.Updated event to update the API Gateway projection
+			const updatedProduct = await repo.getById(result.productId);
+			if (updatedProduct) {
+				const publisher = getProductEventPublisher();
+				await publisher.publishProductUpdated(updatedProduct);
+				context.log(`Published Product.Updated event for ${result.productId}`);
+			}
 		} else if (result.reason === 'product-not-found') {
 			context.warn(`Product ${result.productId} not found`);
 		} else if (result.reason === 'already-on-loan') {
