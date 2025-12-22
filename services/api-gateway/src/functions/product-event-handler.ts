@@ -2,7 +2,7 @@
 
 import { app, InvocationContext, EventGridEvent as AzureEventGridEvent } from '@azure/functions';
 import { Product } from '../domain/product';
-import { getProductRepo } from '../config/appServices';
+import { getProductRepo } from '../config/app-services';
 
 // Event types published by the Products Service
 const ProductEventTypes = {

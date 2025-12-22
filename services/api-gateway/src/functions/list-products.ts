@@ -6,7 +6,7 @@ import {
 } from "@azure/functions";
 import { ResponseBuilder } from "../app/response-builder";
 import { AuthMiddleware } from "../app/auth-middleware";
-import { getProductRepo } from "../config/appServices";
+import { getProductRepo } from "../config/app-services";
 
 export async function listProducts(
   request: HttpRequest,
