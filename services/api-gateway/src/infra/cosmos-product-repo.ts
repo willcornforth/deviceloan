@@ -74,7 +74,7 @@ export class CosmosProductRepo implements ProductRepo {
 		}
 	}
 
-	async list(availableOnly: boolean): Promise<readonly Product[]> {
+	async list(availableOnly: boolean): Promise<Product[]> {
 		const { resources } = await this.container.items
 			.readAll<ProductDocument>()
 			.fetchAll();
