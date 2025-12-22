@@ -1,7 +1,10 @@
 // Azure Function v4 - EventGrid subscriber for Loan.Returned events
 
 import { app, EventGridEvent, InvocationContext } from '@azure/functions';
-import { getProductRepo } from '../config/appServices';
+import {
+  getProductRepo,
+  getProductEventPublisher,
+} from '../config/appServices';
 import {
   handleLoanReturned,
   LoanReturnedEvent,
@@ -43,6 +46,14 @@ export async function loanReturnedHandler(
 
     if (result.success === true) {
       context.log(`Product ${result.productId} status updated to available`);
+
+      // Publish Product.Released event with full product data
+      const updatedProduct = await repo.getById(result.productId);
+      if (updatedProduct) {
+        const publisher = getProductEventPublisher();
+        await publisher.publishProductReleased(updatedProduct);
+        context.log(`Published Product.Released event for ${result.productId}`);
+      }
     } else if (result.reason === 'product-not-found') {
       context.warn(`Product ${result.productId} not found`);
     } else if (result.reason === 'not-on-loan') {
