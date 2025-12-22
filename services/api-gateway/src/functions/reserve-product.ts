@@ -87,7 +87,9 @@ export async function reserveProduct(
       context
     );
 
-    return ResponseBuilder.created(result, "Product reserved successfully and loan is pending approval");
+		// We don't need to build a response here as the upstream service response
+		// does this for us.
+    return result;
   } catch (error) {
     context.log(`Error in reserveProduct: ${error}`);
 
