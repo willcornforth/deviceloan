@@ -110,5 +110,22 @@ export class LoanEventPublisher {
       },
     ]);
   }
+
+  async publishLoanRejected(loan: LoanEventData, context?: InvocationContext) {
+    context?.log(`Publishing Loan.Rejected event for loan ID: ${loan.id}`);
+
+    await this.client.send([
+      {
+        eventType: "Loan.Rejected",
+        subject: `loans/${loan.id}`,
+        dataVersion: "1.0",
+        data: {
+          id: loan.id,
+          userId: loan.userId,
+          productId: loan.productId,
+        },
+      },
+    ]);
+  }
 }
 export const loanEventPublisher = new LoanEventPublisher();

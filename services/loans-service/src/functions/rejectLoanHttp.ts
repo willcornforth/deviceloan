@@ -6,6 +6,7 @@ import {
 } from "@azure/functions";
 import { rejectLoan } from "../app/rejectLoan";
 import { getLoanRepo } from "../config/appServices";
+import { loanEventPublisher } from "../infra/eventgrid-loans-publisher";
 
 async function handler(
   request: HttpRequest,
@@ -37,6 +38,17 @@ async function handler(
         jsonBody: { error: result.error },
       };
     }
+
+    // Publish Loan.Rejected event to unreserve the product
+    await loanEventPublisher.publishLoanRejected(
+      {
+        id: result.id,
+        userId: result.userId,
+        productId: result.productId,
+        dueDate: result.dueDate.toISOString(),
+      },
+      context
+    );
 
     return {
       status: 200,
