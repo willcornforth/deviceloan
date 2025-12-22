@@ -26,7 +26,7 @@ function Devices() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDevice, setSelectedDevice] = useState<Product | null>(null);
   const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false);
-  const [createdLoan, setCreatedLoan] = useState<Loan | null>(null);
+  const [reservationDetails, setReservationDetails] = useState<{ returnDate: string; reservedAt: string } | null>(null);
 
   const categories: Category[] = [
     { name: "All", icon: null },
@@ -53,11 +53,14 @@ function Devices() {
         returnDate: returnDate,
       });
 
-      console.log("Loan created successfully:", result.loan);
+      console.log("Product reserved successfully:", result);
       
       // Close loan modal and open success dialog
       setIsModalOpen(false);
-      setCreatedLoan(result.loan);
+      setReservationDetails({
+        returnDate: returnDate,
+        reservedAt: result.product.reservedAt || new Date().toISOString(),
+      });
       setIsSuccessDialogOpen(true);
       
       // TODO: Optionally refresh the devices list to update availability
@@ -70,7 +73,7 @@ function Devices() {
 
   const handleCloseSuccessDialog = () => {
     setIsSuccessDialogOpen(false);
-    setCreatedLoan(null);
+    setReservationDetails(null);
     setSelectedDevice(null);
   };
 
@@ -199,8 +202,9 @@ function Devices() {
       <LoanSuccessDialog
         isOpen={isSuccessDialogOpen}
         onClose={handleCloseSuccessDialog}
-        loan={createdLoan}
         deviceName={selectedDevice?.name || ''}
+        returnDate={reservationDetails?.returnDate || ''}
+        reservedAt={reservationDetails?.reservedAt || ''}
       />
     </div>
   );

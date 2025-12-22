@@ -22,6 +22,8 @@ export type Product = {
 	readonly status: ProductStatus;
 	readonly image?: string;
 	readonly createdAt: Date;
+	readonly reservedBy?: string;
+	readonly reservedAt?: string;
 }
 
 export type ListProductOutput = {

@@ -1,15 +1,15 @@
 import { useEffect } from 'react';
 import { CheckCircleIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import { Loan } from '../domain/loans';
 
 interface LoanSuccessDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  loan: Loan | null;
   deviceName: string;
+  returnDate: string;
+  reservedAt: string;
 }
 
-function LoanSuccessDialog({ isOpen, onClose, loan, deviceName }: LoanSuccessDialogProps) {
+function LoanSuccessDialog({ isOpen, onClose, deviceName, returnDate, reservedAt }: LoanSuccessDialogProps) {
   // Close modal on Escape key
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -33,7 +33,7 @@ function LoanSuccessDialog({ isOpen, onClose, loan, deviceName }: LoanSuccessDia
     };
   }, [isOpen]);
 
-  if (!isOpen || !loan) return null;
+  if (!isOpen) return null;
 
   const formatDate = (date: Date): string => {
     return date.toLocaleDateString('en-US', {
@@ -45,9 +45,9 @@ function LoanSuccessDialog({ isOpen, onClose, loan, deviceName }: LoanSuccessDia
   };
 
   const calculateDuration = (): number => {
-    const dueDate = new Date(loan.dueDate);
-    const loanDate = new Date(loan.loanDate);
-    const diff = dueDate.getTime() - loanDate.getTime();
+    const dueDate = new Date(returnDate);
+    const reservationDate = new Date(reservedAt);
+    const diff = dueDate.getTime() - reservationDate.getTime();
     return Math.ceil(diff / (1000 * 60 * 60 * 24));
   };
 
@@ -85,10 +85,10 @@ function LoanSuccessDialog({ isOpen, onClose, loan, deviceName }: LoanSuccessDia
 
             {/* Title */}
             <h3 className="text-2xl font-bold text-center text-gray-900 mb-2">
-              Loan Created!
+              Device Reserved!
             </h3>
             <p className="text-center text-gray-600 mb-6">
-              Your device loan has been submitted for approval.
+              Your reservation has been submitted and is pending approval.
             </p>
 
             {/* Loan Details Card */}
@@ -100,19 +100,19 @@ function LoanSuccessDialog({ isOpen, onClose, loan, deviceName }: LoanSuccessDia
 
               <div className="border-t border-indigo-200 pt-3 space-y-2">
                 <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Loan ID:</span>
-                  <span className="text-sm font-medium text-gray-900">{loan.id}</span>
+                  <span className="text-sm text-gray-600">Status:</span>
+                  <span className="text-sm font-medium text-yellow-600">Pending Approval</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Start Date:</span>
+                  <span className="text-sm text-gray-600">Reserved On:</span>
                   <span className="text-sm font-medium text-gray-900">
-                    {formatDate(new Date(loan.loanDate))}
+                    {formatDate(new Date(reservedAt))}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Due Date:</span>
+                  <span className="text-sm text-gray-600">Expected Return:</span>
                   <span className="text-sm font-medium text-gray-900">
-                    {formatDate(new Date(loan.dueDate))}
+                    {formatDate(new Date(returnDate))}
                   </span>
                 </div>
                 <div className="flex justify-between">
@@ -127,8 +127,8 @@ function LoanSuccessDialog({ isOpen, onClose, loan, deviceName }: LoanSuccessDia
             {/* Reminder */}
             <div className="mt-5 bg-blue-50 border border-blue-200 rounded-lg p-4">
               <p className="text-sm text-blue-900">
-                <span className="font-semibold">Reminder:</span> Please return the device by{' '}
-                <span className="font-semibold">{formatDate(new Date(loan.dueDate))}</span> to avoid late fees.
+                <span className="font-semibold">Next Steps:</span> Your reservation is awaiting approval. Once approved, you'll be able to collect the device. If approved, please return it by{' '}
+                <span className="font-semibold">{formatDate(new Date(returnDate))}</span>.
               </p>
             </div>
 

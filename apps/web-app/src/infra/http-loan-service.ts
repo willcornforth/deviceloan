@@ -90,12 +90,12 @@ export class HttpLoanService implements LoanService {
 
     const json = await response.json();
 
-    // Convert date strings back to Date objects
-    const loanData = json.data;
+    // The reserve endpoint returns the reserved product, not a loan
+    // The loan will be created asynchronously via event handlers
+    const productData = json.product;
     return {
-      loan: {
-        ...loanData,
-      },
+      product: productData,
+      message: json.message,
     };
   }
 

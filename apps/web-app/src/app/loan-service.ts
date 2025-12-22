@@ -1,4 +1,5 @@
 import { Loan, LoanId, LoanProductDTO, ProductId, UserId } from "../domain/loans";
+import { Product } from "./product-service";
 
 export type CreateLoanInput = {
   readonly productId: ProductId;
@@ -6,7 +7,8 @@ export type CreateLoanInput = {
 }
 
 export type CreateLoanOutput = {
-  readonly loan: Loan;
+  readonly product: Product;
+  readonly message: string;
 }
 
 export type ListLoansInput = {
