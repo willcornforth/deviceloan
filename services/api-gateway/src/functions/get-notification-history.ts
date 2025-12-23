@@ -59,7 +59,7 @@ export async function getNotificationHistory(
 
     if (error instanceof HttpClientError) {
       if (error.statusCode === 404) {
-        return ResponseBuilder.notFound("Notification history not found");
+        return ResponseBuilder.serviceError(404, "Notification history not found");
       } else if (error.statusCode === 400) {
         return ResponseBuilder.badRequest("Invalid request parameters");
       }

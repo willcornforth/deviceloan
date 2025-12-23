@@ -52,7 +52,7 @@ export async function getNotificationPreferences(
 
     if (error instanceof HttpClientError) {
       if (error.statusCode === 404) {
-        return ResponseBuilder.notFound("Notification preferences not found");
+        return ResponseBuilder.serviceError(404, "Notification preferences not found");
       } else if (error.statusCode === 400) {
         return ResponseBuilder.badRequest("Invalid request parameters");
       }

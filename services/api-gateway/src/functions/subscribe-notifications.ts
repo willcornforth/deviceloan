@@ -77,7 +77,7 @@ export async function subscribeNotifications(
       if (error.statusCode === 400) {
         return ResponseBuilder.badRequest("Invalid subscription request");
       } else if (error.statusCode === 409) {
-        return ResponseBuilder.conflict("Subscription already exists");
+        return ResponseBuilder.serviceError(409, "Subscription already exists");
       }
     }
 
