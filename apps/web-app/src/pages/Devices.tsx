@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   ComputerDesktopIcon,
   DeviceTabletIcon,
@@ -13,6 +13,7 @@ import LoanDeviceModal from "../components/LoanDeviceModal";
 import LoanSuccessDialog from "../components/LoanSuccessDialog";
 import { useProducts } from "../hooks/useProducts";
 import { useLoanService } from "../hooks/useLoanService";
+import { useNotificationService } from "../hooks/useNotificationService";
 import { Product } from "../app/product-service";
 import { Loan } from "../domain/loans";
 
@@ -20,6 +21,7 @@ function Devices() {
   const { products: devices, loading, error } = useProducts();
   const { isAuthenticated, loginWithRedirect } = useAuth0();
   const { getLoanService } = useLoanService();
+  const { getNotificationService } = useNotificationService();
 
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
@@ -27,6 +29,29 @@ function Devices() {
   const [selectedDevice, setSelectedDevice] = useState<Product | null>(null);
   const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false);
   const [reservationDetails, setReservationDetails] = useState<{ returnDate: string; reservedAt: string } | null>(null);
+  const [subscribedProducts, setSubscribedProducts] = useState<Set<string>>(new Set());
+  const [subscribingProducts, setSubscribingProducts] = useState<Set<string>>(new Set());
+
+  // Load user's notification preferences
+  useEffect(() => {
+    const loadPreferences = async () => {
+      if (!isAuthenticated) {
+        setSubscribedProducts(new Set());
+        return;
+      }
+
+      try {
+        const notificationService = await getNotificationService();
+        const preferences = await notificationService.getPreferences();
+        const productIds = new Set(preferences.map(pref => pref.productId));
+        setSubscribedProducts(productIds);
+      } catch (err) {
+        console.error("Failed to load notification preferences:", err);
+      }
+    };
+
+    loadPreferences();
+  }, [isAuthenticated, getNotificationService]);
 
   const categories: Category[] = [
     { name: "All", icon: null },
@@ -75,6 +100,45 @@ function Devices() {
     setIsSuccessDialogOpen(false);
     setReservationDetails(null);
     setSelectedDevice(null);
+  };
+
+  const handleNotificationSubscribe = async (productId: string) => {
+    if (!isAuthenticated) {
+      loginWithRedirect();
+      return;
+    }
+
+    setSubscribingProducts(prev => new Set(prev).add(productId));
+
+    try {
+      const notificationService = await getNotificationService();
+      
+      if (subscribedProducts.has(productId)) {
+        // Unsubscribe
+        await notificationService.unsubscribe(productId);
+        setSubscribedProducts(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(productId);
+          return newSet;
+        });
+      } else {
+        // Subscribe to product-released notifications
+        await notificationService.subscribe({
+          productId,
+          notificationTypes: ['product-released'],
+        });
+        setSubscribedProducts(prev => new Set(prev).add(productId));
+      }
+    } catch (err) {
+      console.error("Failed to manage notification subscription:", err);
+      // TODO: Show error message to user
+    } finally {
+      setSubscribingProducts(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(productId);
+        return newSet;
+      });
+    }
   };
 
   const filteredDevices = useMemo(() => {
@@ -144,6 +208,9 @@ function Devices() {
             {filteredDevices.map((device) => {
               const isAvailable = device.status === "available";
               const canLoan = isAuthenticated && isAvailable;
+              const isUnavailable = !isAvailable;
+              const isSubscribed = subscribedProducts.has(device.id);
+              const isSubscribing = subscribingProducts.has(device.id);
 
               return (
                 <DeviceCard
@@ -183,6 +250,20 @@ function Devices() {
                       ? () => handleOpenLoanModal(device)
                       : undefined
                   }
+                  secondaryButtonText={
+                    isUnavailable
+                      ? isSubscribed
+                        ? "Unsubscribe"
+                        : "Notify When Available"
+                      : undefined
+                  }
+                  secondaryButtonDisabled={isSubscribing}
+                  onSecondaryButtonClick={
+                    isUnavailable
+                      ? () => handleNotificationSubscribe(device.id)
+                      : undefined
+                  }
+                  isSubscribed={isSubscribed}
                 />
               );
             })}

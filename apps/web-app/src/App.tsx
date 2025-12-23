@@ -5,6 +5,7 @@ import Home from './pages/Home';
 import Devices from './pages/Devices';
 import Loans from './pages/Loans';
 import Approvals from './pages/Approvals';
+import Notifications from './pages/Notifications';
 
 function App() {
   return (
@@ -28,6 +29,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Approvals />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/notifications" 
+              element={
+                <ProtectedRoute>
+                  <Notifications />
                 </ProtectedRoute>
               } 
             />

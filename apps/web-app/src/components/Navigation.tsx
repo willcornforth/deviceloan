@@ -87,6 +87,18 @@ function Navigation() {
             >
               Loans
             </Link>
+            {isAuthenticated && (
+              <Link 
+                to="/notifications" 
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  isActive('/notifications') 
+                    ? 'bg-indigo-50 text-indigo-700' 
+                    : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                }`}
+              >
+                Notifications
+              </Link>
+            )}
             {hasApprovePermission && (
               <Link 
                 to="/approvals" 

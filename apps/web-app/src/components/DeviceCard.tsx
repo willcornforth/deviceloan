@@ -7,6 +7,10 @@ interface DeviceCardProps {
   buttonText?: string;
   buttonDisabled?: boolean;
   onButtonClick?: () => void;
+  secondaryButtonText?: string;
+  secondaryButtonDisabled?: boolean;
+  onSecondaryButtonClick?: () => void;
+  isSubscribed?: boolean;
 }
 
 function DeviceCard({
@@ -17,7 +21,11 @@ function DeviceCard({
   specs,
   buttonText = 'Loan Device',
   buttonDisabled = false,
-  onButtonClick
+  onButtonClick,
+  secondaryButtonText,
+  secondaryButtonDisabled = false,
+  onSecondaryButtonClick,
+  isSubscribed = false,
 }: DeviceCardProps) {
   return (
     <div 
@@ -45,17 +53,34 @@ function DeviceCard({
           </span>
         </div>
         {specs && <p className="text-sm text-gray-600 mb-4">{specs}</p>}
-        <button 
-          disabled={buttonDisabled}
-          onClick={onButtonClick}
-          className={`w-full py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
-            buttonDisabled
-              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-              : 'bg-indigo-600 text-white hover:bg-indigo-700 cursor-pointer'
-          }`}
-        >
-          {buttonText}
-        </button>
+        <div className="space-y-2">
+          <button 
+            disabled={buttonDisabled}
+            onClick={onButtonClick}
+            className={`w-full py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
+              buttonDisabled
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                : 'bg-indigo-600 text-white hover:bg-indigo-700 cursor-pointer'
+            }`}
+          >
+            {buttonText}
+          </button>
+          {secondaryButtonText && (
+            <button 
+              disabled={secondaryButtonDisabled}
+              onClick={onSecondaryButtonClick}
+              className={`w-full py-2 px-4 rounded-lg text-sm font-medium transition-colors border ${
+                isSubscribed
+                  ? 'border-green-500 bg-green-50 text-green-700 hover:bg-green-100'
+                  : secondaryButtonDisabled
+                  ? 'border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed'
+                  : 'border-indigo-300 bg-white text-indigo-600 hover:bg-indigo-50 cursor-pointer'
+              }`}
+            >
+              {isSubscribed ? '✓ Subscribed' : secondaryButtonText}
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
