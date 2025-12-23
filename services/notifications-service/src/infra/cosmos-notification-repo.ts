@@ -33,10 +33,13 @@ export class CosmosNotificationRepo implements NotificationRepo {
 			],
 		};
 
-		const { resources } = await this.container.items.query(querySpec).fetchAll();
+		// Query within the user's partition for efficiency
+		const { resources } = await this.container.items
+			.query(querySpec, { partitionKey: userId })
+			.fetchAll();
 		
 		for (const item of resources) {
-			await this.container.item(item.id, item.userId).delete();
+			await this.container.item(item.id, userId).delete();
 		}
 	}
 
@@ -62,7 +65,10 @@ export class CosmosNotificationRepo implements NotificationRepo {
 			],
 		};
 
-		const { resources } = await this.container.items.query(querySpec).fetchAll();
+		// Query within the user's partition for efficiency
+		const { resources } = await this.container.items
+			.query(querySpec, { partitionKey: userId })
+			.fetchAll();
 		return resources.map(this.toPreference);
 	}
 
@@ -85,7 +91,10 @@ export class CosmosNotificationRepo implements NotificationRepo {
 			],
 		};
 
-		const { resources } = await this.container.items.query(querySpec).fetchAll();
+		// Query within the user's partition for efficiency
+		const { resources } = await this.container.items
+			.query(querySpec, { partitionKey: userId })
+			.fetchAll();
 		return resources.map(this.toNotification);
 	}
 

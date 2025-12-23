@@ -10,18 +10,27 @@ async function unsubscribeHandler(
 	try {
 		const userId = request.query.get('userId');
 		if (!userId) {
+			context.error('Missing userId query parameter');
 			return ResponseBuilder.badRequest('userId query parameter is required');
 		}
 
 		const productId = request.params.productId;
+		if (!productId) {
+			context.error('Missing productId parameter');
+			return ResponseBuilder.badRequest('productId parameter is required');
+		}
+
+		context.log(`Attempting to delete preference for userId: ${userId}, productId: ${productId}`);
 
 		const config = createAppConfig();
 		await deletePreference({ userId, productId }, config.notificationRepo);
 
+		context.log(`Successfully deleted preference for userId: ${userId}, productId: ${productId}`);
 		return ResponseBuilder.success({ message: 'Unsubscribed successfully' });
 	} catch (error: any) {
 		context.error('Error deleting notification preference:', error);
-		return ResponseBuilder.error(error.message);
+		context.error('Error stack:', error.stack);
+		return ResponseBuilder.error(error.message || 'Internal server error');
 	}
 }
 
