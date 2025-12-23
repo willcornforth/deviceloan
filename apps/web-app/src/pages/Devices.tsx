@@ -51,7 +51,8 @@ function Devices() {
     };
 
     loadPreferences();
-  }, [isAuthenticated, getNotificationService]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated]);
 
   const categories: Category[] = [
     { name: "All", icon: null },
