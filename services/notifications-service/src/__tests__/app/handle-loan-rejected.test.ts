@@ -2,11 +2,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { handleLoanRejected } from '../../app/handle-loan-rejected';
 import { NotificationRepo, Notification } from '../../domain/notification';
 import { EmailSender } from '../../domain/email-sender';
+import { UserService } from '../../domain/user-service';
 import { LoanEventData } from '../../domain/events';
 
 describe('handleLoanRejected', () => {
 	let mockRepo: NotificationRepo;
 	let mockEmailSender: EmailSender;
+	let mockUserService: UserService;
 
 	beforeEach(() => {
 		mockRepo = {
@@ -21,6 +23,14 @@ describe('handleLoanRejected', () => {
 
 		mockEmailSender = {
 			send: vi.fn(),
+		};
+
+		mockUserService = {
+			getUserInfo: vi.fn().mockResolvedValue({
+				userId: 'auth0|123',
+				email: 'user@example.com',
+				name: 'Test User',
+			}),
 		};
 	});
 
@@ -48,7 +58,7 @@ describe('handleLoanRejected', () => {
 		vi.mocked(mockEmailSender.send).mockResolvedValue();
 		vi.mocked(mockRepo.updateNotificationStatus).mockResolvedValue();
 
-		await handleLoanRejected(event, mockRepo, mockEmailSender);
+		await handleLoanRejected(event, mockRepo, mockEmailSender, mockUserService);
 
 		expect(mockRepo.saveNotification).toHaveBeenCalledWith(
 			expect.objectContaining({
@@ -61,8 +71,10 @@ describe('handleLoanRejected', () => {
 			})
 		);
 
+		expect(mockUserService.getUserInfo).toHaveBeenCalledWith(event.userId);
+
 		expect(mockEmailSender.send).toHaveBeenCalledWith(
-			event.userId,
+			'user@example.com',
 			expect.stringContaining('Loan Rejected'),
 			expect.stringContaining('rejected')
 		);
@@ -100,7 +112,7 @@ describe('handleLoanRejected', () => {
 		);
 		vi.mocked(mockRepo.updateNotificationStatus).mockResolvedValue();
 
-		await handleLoanRejected(event, mockRepo, mockEmailSender);
+		await handleLoanRejected(event, mockRepo, mockEmailSender, mockUserService);
 
 		expect(mockRepo.updateNotificationStatus).toHaveBeenCalledWith(
 			savedNotification.id,

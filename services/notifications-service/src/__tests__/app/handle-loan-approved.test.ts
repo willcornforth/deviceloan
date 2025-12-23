@@ -2,11 +2,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { handleLoanApproved } from '../../app/handle-loan-approved';
 import { NotificationRepo, Notification } from '../../domain/notification';
 import { EmailSender } from '../../domain/email-sender';
+import { UserService } from '../../domain/user-service';
 import { LoanEventData } from '../../domain/events';
 
 describe('handleLoanApproved', () => {
 	let mockRepo: NotificationRepo;
 	let mockEmailSender: EmailSender;
+	let mockUserService: UserService;
 
 	beforeEach(() => {
 		mockRepo = {
@@ -21,6 +23,14 @@ describe('handleLoanApproved', () => {
 
 		mockEmailSender = {
 			send: vi.fn(),
+		};
+
+		mockUserService = {
+			getUserInfo: vi.fn().mockResolvedValue({
+				userId: 'auth0|123',
+				email: 'user@example.com',
+				name: 'Test User',
+			}),
 		};
 	});
 
@@ -48,7 +58,7 @@ describe('handleLoanApproved', () => {
 		vi.mocked(mockEmailSender.send).mockResolvedValue();
 		vi.mocked(mockRepo.updateNotificationStatus).mockResolvedValue();
 
-		await handleLoanApproved(event, mockRepo, mockEmailSender);
+		await handleLoanApproved(event, mockRepo, mockEmailSender, mockUserService);
 
 		expect(mockRepo.saveNotification).toHaveBeenCalledWith(
 			expect.objectContaining({
@@ -61,8 +71,10 @@ describe('handleLoanApproved', () => {
 			})
 		);
 
+		expect(mockUserService.getUserInfo).toHaveBeenCalledWith(event.userId);
+
 		expect(mockEmailSender.send).toHaveBeenCalledWith(
-			event.userId,
+			'user@example.com',
 			expect.stringContaining('Loan Approved'),
 			expect.stringContaining(event.dueDate)
 		);
@@ -100,7 +112,7 @@ describe('handleLoanApproved', () => {
 		);
 		vi.mocked(mockRepo.updateNotificationStatus).mockResolvedValue();
 
-		await handleLoanApproved(event, mockRepo, mockEmailSender);
+		await handleLoanApproved(event, mockRepo, mockEmailSender, mockUserService);
 
 		expect(mockRepo.updateNotificationStatus).toHaveBeenCalledWith(
 			savedNotification.id,
@@ -124,7 +136,7 @@ describe('handleLoanApproved', () => {
 		vi.mocked(mockEmailSender.send).mockResolvedValue();
 		vi.mocked(mockRepo.updateNotificationStatus).mockResolvedValue();
 
-		await handleLoanApproved(event, mockRepo, mockEmailSender);
+		await handleLoanApproved(event, mockRepo, mockEmailSender, mockUserService);
 
 		expect(mockRepo.saveNotification).toHaveBeenCalledWith(
 			expect.objectContaining({

@@ -2,11 +2,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { handleProductReleased } from '../../app/handle-product-released';
 import { NotificationRepo, NotificationPreference } from '../../domain/notification';
 import { EmailSender } from '../../domain/email-sender';
+import { UserService } from '../../domain/user-service';
 import { ProductEventData } from '../../domain/events';
 
 describe('handleProductReleased', () => {
 	let mockRepo: NotificationRepo;
 	let mockEmailSender: EmailSender;
+	let mockUserService: UserService;
 
 	beforeEach(() => {
 		mockRepo = {
@@ -21,6 +23,16 @@ describe('handleProductReleased', () => {
 
 		mockEmailSender = {
 			send: vi.fn(),
+		};
+
+		mockUserService = {
+			getUserInfo: vi.fn((userId) =>
+				Promise.resolve({
+					userId,
+					email: userId,
+					name: 'Test User',
+				})
+			),
 		};
 	});
 
@@ -59,7 +71,7 @@ describe('handleProductReleased', () => {
 		vi.mocked(mockEmailSender.send).mockResolvedValue();
 		vi.mocked(mockRepo.updateNotificationStatus).mockResolvedValue();
 
-		await handleProductReleased(event, mockRepo, mockEmailSender);
+		await handleProductReleased(event, mockRepo, mockEmailSender, mockUserService);
 
 		expect(mockRepo.getPreferencesByProduct).toHaveBeenCalledWith(event.productId);
 		expect(mockRepo.saveNotification).toHaveBeenCalledTimes(2);
@@ -108,7 +120,7 @@ describe('handleProductReleased', () => {
 
 		vi.mocked(mockRepo.getPreferencesByProduct).mockResolvedValue(preferences);
 
-		await handleProductReleased(event, mockRepo, mockEmailSender);
+		await handleProductReleased(event, mockRepo, mockEmailSender, mockUserService);
 
 		expect(mockRepo.saveNotification).not.toHaveBeenCalled();
 		expect(mockEmailSender.send).not.toHaveBeenCalled();
@@ -127,7 +139,7 @@ describe('handleProductReleased', () => {
 
 		vi.mocked(mockRepo.getPreferencesByProduct).mockResolvedValue([]);
 
-		await handleProductReleased(event, mockRepo, mockEmailSender);
+		await handleProductReleased(event, mockRepo, mockEmailSender, mockUserService);
 
 		expect(mockRepo.saveNotification).not.toHaveBeenCalled();
 		expect(mockEmailSender.send).not.toHaveBeenCalled();
@@ -163,7 +175,7 @@ describe('handleProductReleased', () => {
 		);
 		vi.mocked(mockRepo.updateNotificationStatus).mockResolvedValue();
 
-		await handleProductReleased(event, mockRepo, mockEmailSender);
+		await handleProductReleased(event, mockRepo, mockEmailSender, mockUserService);
 
 		expect(mockRepo.updateNotificationStatus).toHaveBeenCalledWith(
 			expect.any(String),
