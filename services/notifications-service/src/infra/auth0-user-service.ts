@@ -30,7 +30,8 @@ export class Auth0UserService implements UserService {
 		});
 
 		if (!response.ok) {
-			throw new Error(`Failed to get Auth0 management token: ${response.statusText}`);
+			const errorData = await response.text();
+			throw new Error(`Failed to get Auth0 management token: ${response.statusText} - ${errorData}`);
 		}
 
 		const data = await response.json();
@@ -58,10 +59,18 @@ export class Auth0UserService implements UserService {
 		);
 
 		if (!response.ok) {
-			throw new Error(`Failed to get user info from Auth0: ${response.statusText}`);
+			const errorData = await response.text();
+			throw new Error(
+				`Failed to get user info from Auth0: ${response.statusText} - ${errorData}. ` +
+				`UserId: ${userId}, Token present: ${!!token}`
+			);
 		}
 
 		const userData = await response.json();
+
+		if (!userData.email) {
+			throw new Error(`User ${userId} does not have an email address in Auth0`);
+		}
 
 		return {
 			userId: userData.user_id,
