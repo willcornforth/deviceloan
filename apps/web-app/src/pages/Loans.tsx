@@ -78,15 +78,16 @@ function Loans() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <TabSwitch
           tabs={[
-            { id: 'pending', label: 'Pending', count: pendingLoans.length },
-            { id: 'active', label: 'Active', count: activeLoans.length },
-            { id: 'history', label: 'History', count: pastLoans.length }
+            { id: 'pending', label: 'Pending', count: pendingLoans.length, badgeColor: 'yellow' },
+            { id: 'active', label: 'Active', count: activeLoans.length, badgeColor: 'green' },
+            { id: 'history', label: 'History', count: pastLoans.length, badgeColor: 'gray' }
           ]}
           activeTab={activeTab}
           onTabChange={(tab) => setActiveTab(tab as TabType)}
         />
-        <div>
-          {activeTab === 'pending' && (
+
+        {/* Pending Tab */}
+        {activeTab === 'pending' && (
             pendingLoans.length === 0 ? (
               <div className="text-center py-12">
                 <p className="text-gray-500 text-lg">You have no loans awaiting approval.</p>
@@ -110,7 +111,9 @@ function Loans() {
               </div>
             )
           )}
-          {activeTab === 'active' && (
+
+        {/* Active Tab */}
+        {activeTab === 'active' && (
             activeLoans.length === 0 ? (
               <div className="text-center py-12">
                 <p className="text-gray-500 text-lg">You have no active loans.</p>
@@ -132,7 +135,9 @@ function Loans() {
                   />
                 ))}
               </div>
-            )
+
+        {/* History Tab */}
+          )
           )}
           {activeTab === 'history' && (
             pastLoans.length === 0 ? (
@@ -147,14 +152,11 @@ function Loans() {
                     image={`https://placehold.co/400x300/e0e7ff/4f46e5?text=${loan.product?.name ?? 'Name Unavailable'}`}
                     device={loan.product?.name ?? 'Name Unavailable'}
                     category={loan.product?.category ?? 'Category Unavailable'}
-                    loanDate={formatDate(loan.loanDate)}
-                    returnDate={formatDate(loan.dueDate)}
-                    status={loan.status}
+                      status={loan.status}
                     isActive={false}
                   />
                 ))}
               </div>
-            )
           )}
         </div>
       </div>

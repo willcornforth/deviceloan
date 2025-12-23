@@ -1,7 +1,8 @@
 interface Tab {
   id: string;
   label: string;
-  count: number;
+  count?: number;
+  badgeColor?: 'yellow' | 'green' | 'gray' | 'indigo';
 }
 
 interface TabSwitchProps {
@@ -11,21 +12,43 @@ interface TabSwitchProps {
 }
 
 function TabSwitch({ tabs, activeTab, onTabChange }: TabSwitchProps) {
+  const getBadgeColor = (color?: 'yellow' | 'green' | 'gray' | 'indigo') => {
+    switch (color) {
+      case 'yellow':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'green':
+        return 'bg-green-100 text-green-800';
+      case 'gray':
+        return 'bg-gray-100 text-gray-600';
+      case 'indigo':
+        return 'bg-indigo-100 text-indigo-600';
+      default:
+        return 'bg-indigo-100 text-indigo-600';
+    }
+  };
+
   return (
-    <div className="flex gap-1 space-x-1 rounded-xl bg-gray-100 p-1 mb-6 max-w-md">
-      {tabs.map((tab) => (
-        <button
-          key={tab.id}
-          onClick={() => onTabChange(tab.id)}
-          className={`w-full rounded-lg py-2.5 text-sm font-medium leading-5 transition-all focus:outline-none focus:ring-2 ring-offset-2 ring-offset-gray-100 ring-indigo-400 cursor-pointer ${
-            activeTab === tab.id
-              ? 'bg-white text-indigo-700 shadow'
-              : 'text-gray-600 hover:bg-white/[0.12] hover:text-gray-900'
-          }`}
-        >
-          {tab.label} ({tab.count})
-        </button>
-      ))}
+    <div className="mb-6 border-b border-gray-200">
+      <nav className="-mb-px flex space-x-8">
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => onTabChange(tab.id)}
+            className={`py-4 px-1 border-b-2 font-medium text-sm ${
+              activeTab === tab.id
+                ? "border-indigo-500 text-indigo-600"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+            }`}
+          >
+            {tab.label}
+            {tab.count !== undefined && tab.count > 0 && (
+              <span className={`ml-2 py-0.5 px-2 rounded-full text-xs ${getBadgeColor(tab.badgeColor)}`}>
+                {tab.count}
+              </span>
+            )}
+          </button>
+        ))}
+      </nav>
     </div>
   );
 }

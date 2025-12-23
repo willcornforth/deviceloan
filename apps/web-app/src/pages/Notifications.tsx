@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import { BellIcon, TrashIcon } from "@heroicons/react/24/outline";
 import PageBanner from "../components/PageBanner";
+import TabSwitch from "../components/TabSwitch";
 import { useNotificationService } from "../hooks/useNotificationService";
 import { NotificationPreference, Notification } from "../domain/notifications";
 import { useProducts } from "../hooks/useProducts";
@@ -110,41 +111,14 @@ function Notifications() {
           </div>
         )}
 
-        {/* Tab Switcher */}
-        <div className="mb-6 border-b border-gray-200">
-          <nav className="-mb-px flex space-x-8">
-            <button
-              onClick={() => setActiveTab("preferences")}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                activeTab === "preferences"
-                  ? "border-indigo-500 text-indigo-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-              }`}
-            >
-              Subscriptions
-              {preferences.length > 0 && (
-                <span className="ml-2 bg-indigo-100 text-indigo-600 py-0.5 px-2 rounded-full text-xs">
-                  {preferences.length}
-                </span>
-              )}
-            </button>
-            <button
-              onClick={() => setActiveTab("history")}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                activeTab === "history"
-                  ? "border-indigo-500 text-indigo-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-              }`}
-            >
-              History
-              {history.length > 0 && (
-                <span className="ml-2 bg-gray-100 text-gray-600 py-0.5 px-2 rounded-full text-xs">
-                  {history.length}
-                </span>
-              )}
-            </button>
-          </nav>
-        </div>
+        <TabSwitch
+          tabs={[
+            { id: 'preferences', label: 'Subscriptions', count: preferences.length, badgeColor: 'indigo' },
+            { id: 'history', label: 'History', count: history.length, badgeColor: 'gray' }
+          ]}
+          activeTab={activeTab}
+          onTabChange={(tab) => setActiveTab(tab as "preferences" | "history")}
+        />
 
         {/* Preferences Tab */}
         {activeTab === "preferences" && (
