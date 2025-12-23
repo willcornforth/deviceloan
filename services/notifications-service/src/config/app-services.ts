@@ -12,8 +12,8 @@ export interface AppConfig {
 export function createAppConfig(): AppConfig {
 	const cosmosEndpoint = process.env.COSMOS_ENDPOINT!;
 	const cosmosKey = process.env.COSMOS_KEY!;
-	const cosmosDatabase = process.env.COSMOS_DATABASE || 'deviceloan-notifications';
-	const cosmosContainer = process.env.COSMOS_CONTAINER || 'notifications';
+	const cosmosDatabase = process.env.COSMOS_DATABASE_ID || 'device-loan';
+	const cosmosContainer = process.env.COSMOS_CONTAINER_ID || 'subscriptions';
 	const communicationConnectionString = process.env.COMMUNICATION_CONNECTION_STRING!;
 	const senderAddress = process.env.SENDER_EMAIL_ADDRESS || 'DoNotReply@deviceloan.com';
 

@@ -1,10 +1,10 @@
 import { randomUUID } from 'crypto';
-import { LoanReturnedEvent } from '../domain/events';
+import { LoanEventData } from '../domain/events';
 import { Notification, NotificationRepo } from '../domain/notification';
 import { EmailSender } from '../domain/email-sender';
 
 export async function handleLoanReturned(
-	event: LoanReturnedEvent,
+	event: LoanEventData,
 	repo: NotificationRepo,
 	emailSender: EmailSender
 ): Promise<void> {
@@ -12,11 +12,11 @@ export async function handleLoanReturned(
 		id: randomUUID(),
 		userId: event.userId,
 		type: 'email',
-		subject: `Loan Returned: ${event.productName}`,
-		message: `Thank you for returning "${event.productName}". The loan has been marked as returned.`,
+		subject: `Loan Returned: ${event.id}`,
+		message: `Thank you for returning "Loan ${event.id}". The loan has been marked as returned.`,
 		status: 'pending',
 		productId: event.productId,
-		loanId: event.loanId,
+		loanId: event.id,
 		createdAt: new Date(),
 	};
 

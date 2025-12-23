@@ -1,10 +1,10 @@
 import { randomUUID } from 'crypto';
-import { LoanRejectedEvent } from '../domain/events';
+import { LoanEventData } from '../domain/events';
 import { Notification, NotificationRepo } from '../domain/notification';
 import { EmailSender } from '../domain/email-sender';
 
 export async function handleLoanRejected(
-	event: LoanRejectedEvent,
+	event: LoanEventData,
 	repo: NotificationRepo,
 	emailSender: EmailSender
 ): Promise<void> {
@@ -12,11 +12,11 @@ export async function handleLoanRejected(
 		id: randomUUID(),
 		userId: event.userId,
 		type: 'email',
-		subject: `Loan Rejected: ${event.productName}`,
-		message: `Your loan request for "${event.productName}" has been rejected.${event.reason ? ` Reason: ${event.reason}` : ''}`,
+		subject: `Loan Rejected: ${event.id}`,
+		message: `Your loan request for "Loan ${event.id}" has been rejected! Please contact support for more information.`,
 		status: 'pending',
 		productId: event.productId,
-		loanId: event.loanId,
+		loanId: event.id,
 		createdAt: new Date(),
 	};
 

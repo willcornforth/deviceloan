@@ -1,10 +1,10 @@
 import { randomUUID } from 'crypto';
-import { ProductReleasedEvent } from '../domain/events';
+import { ProductEventData } from '../domain/events';
 import { Notification, NotificationRepo } from '../domain/notification';
 import { EmailSender } from '../domain/email-sender';
 
 export async function handleProductReleased(
-	event: ProductReleasedEvent,
+	event: ProductEventData,
 	repo: NotificationRepo,
 	emailSender: EmailSender
 ): Promise<void> {
@@ -16,8 +16,8 @@ export async function handleProductReleased(
 				id: randomUUID(),
 				userId: pref.userId,
 				type: 'email',
-				subject: `Product Available: ${event.name}`,
-				message: `The product "${event.name}" (${event.category}) you were watching is now available!`,
+				subject: `Product Available: ${event.productName}`,
+				message: `The product "${event.productName}" (${event.category}) you were watching is now available!`,
 				status: 'pending',
 				productId: event.productId,
 				createdAt: new Date(),

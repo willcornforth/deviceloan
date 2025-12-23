@@ -1,7 +1,7 @@
 import { app, EventGridEvent, InvocationContext } from '@azure/functions';
 import { createAppConfig } from '../config/app-services';
 import { handleProductReleased } from '../app/handle-product-released';
-import { ProductReleasedEvent } from '../domain/events';
+import { ProductEventData } from '../domain/events';
 
 async function productReleasedHandler(
 	event: EventGridEvent,
@@ -10,7 +10,7 @@ async function productReleasedHandler(
 	try {
 		context.log('Product.Released event received:', event);
 
-		const productEvent: ProductReleasedEvent = event.data as unknown as ProductReleasedEvent;
+		const productEvent: ProductEventData = event.data as unknown as ProductEventData;
 		const config = createAppConfig();
 
 		await handleProductReleased(productEvent, config.notificationRepo, config.emailSender);

@@ -1,29 +1,19 @@
-export interface ProductReleasedEvent {
-	productId: string;
-	name: string;
-	category: string;
+export interface ProductEventData {
+  readonly productId: string;
+  readonly productName: string;
+  readonly serialNumber: string;
+  readonly description: string;
+  readonly category: string;
+  readonly status: string;
+  readonly image?: string;
+  readonly createdAt: string;
+  readonly reservedBy?: string;
+  readonly reservedAt?: string;
 }
 
-export interface LoanApprovedEvent {
-	loanId: string;
-	userId: string;
-	productId: string;
-	productName: string;
-	returnDate: string;
-}
-
-export interface LoanRejectedEvent {
-	loanId: string;
-	userId: string;
-	productId: string;
-	productName: string;
-	reason?: string;
-}
-
-export interface LoanReturnedEvent {
-	loanId: string;
-	userId: string;
-	productId: string;
-	productName: string;
-	returnedAt: string;
+export interface LoanEventData {
+  readonly id: string;
+  readonly userId: string;
+  readonly productId: string;
+  readonly dueDate: string;
 }

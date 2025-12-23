@@ -1,7 +1,7 @@
 import { app, EventGridEvent, InvocationContext } from '@azure/functions';
 import { createAppConfig } from '../config/app-services';
 import { handleLoanApproved } from '../app/handle-loan-approved';
-import { LoanApprovedEvent } from '../domain/events';
+import { LoanEventData } from '../domain/events';
 
 async function loanApprovedHandler(
 	event: EventGridEvent,
@@ -10,7 +10,7 @@ async function loanApprovedHandler(
 	try {
 		context.log('Loan.Approved event received:', event);
 
-		const loanEvent: LoanApprovedEvent = event.data as unknown as LoanApprovedEvent;
+		const loanEvent: LoanEventData = event.data as unknown as LoanEventData;
 		const config = createAppConfig();
 
 		await handleLoanApproved(loanEvent, config.notificationRepo, config.emailSender);
