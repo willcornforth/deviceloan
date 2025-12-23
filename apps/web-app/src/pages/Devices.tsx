@@ -31,6 +31,8 @@ function Devices() {
   const [reservationDetails, setReservationDetails] = useState<{ returnDate: string; reservedAt: string } | null>(null);
   const [subscribedProducts, setSubscribedProducts] = useState<Set<string>>(new Set());
   const [subscribingProducts, setSubscribingProducts] = useState<Set<string>>(new Set());
+  const [notificationMenuOpen, setNotificationMenuOpen] = useState<string | null>(null);
+  const [selectedNotificationTypes, setSelectedNotificationTypes] = useState<Set<'email' | 'sms' | 'push'>>(new Set(['email']));
 
   // Load user's notification preferences
   useEffect(() => {
@@ -103,13 +105,14 @@ function Devices() {
     setSelectedDevice(null);
   };
 
-  const handleNotificationSubscribe = async (productId: string) => {
+  const handleNotificationSubscribe = async (productId: string, notificationTypes: ('email' | 'sms' | 'push')[]) => {
     if (!isAuthenticated) {
       loginWithRedirect();
       return;
     }
 
     setSubscribingProducts(prev => new Set(prev).add(productId));
+    setNotificationMenuOpen(null);
 
     try {
       const notificationService = await getNotificationService();
@@ -123,10 +126,10 @@ function Devices() {
           return newSet;
         });
       } else {
-        // Subscribe to product-released notifications
+        // Subscribe with selected notification types
         await notificationService.subscribe({
           productId,
-          notificationTypes: ['product-released'],
+          notificationTypes,
         });
         setSubscribedProducts(prev => new Set(prev).add(productId));
       }
@@ -140,6 +143,22 @@ function Devices() {
         return newSet;
       });
     }
+  };
+
+  const toggleNotificationType = (type: 'email' | 'sms' | 'push') => {
+    setSelectedNotificationTypes(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(type)) {
+        newSet.delete(type);
+        // Ensure at least one type is always selected
+        if (newSet.size === 0) {
+          newSet.add('email');
+        }
+      } else {
+        newSet.add(type);
+      }
+      return newSet;
+    });
   };
 
   const filteredDevices = useMemo(() => {
@@ -212,60 +231,118 @@ function Devices() {
               const isUnavailable = !isAvailable;
               const isSubscribed = subscribedProducts.has(device.id);
               const isSubscribing = subscribingProducts.has(device.id);
+              const menuOpen = notificationMenuOpen === device.id;
 
               return (
-                <DeviceCard
-                  key={device.id}
-                  image={
-                    device.image ||
-                    `https://placehold.co/400x300/e0e7ff/4f46e5?text=${encodeURIComponent(
-                      device.name
-                    )}`
-                  }
-                  name={device.name}
-                  category={
-                    device.category.charAt(0).toUpperCase() +
-                    device.category.slice(1)
-                  }
-                  status={
-                    device.status === "available"
-                      ? "Available"
-                      : device.status === "on-loan"
-                      ? "On Loan"
-                      : device.status.charAt(0).toUpperCase() +
-                        device.status.slice(1)
-                  }
-                  specs={device.description}
-                  buttonText={
-                    !isAuthenticated && isAvailable
-                      ? "Sign in to Loan"
-                      : isAvailable
-                      ? "Loan Device"
-                      : "Unavailable"
-                  }
-                  buttonDisabled={!canLoan}
-                  onButtonClick={
-                    !isAuthenticated && isAvailable
-                      ? () => loginWithRedirect()
-                      : canLoan
-                      ? () => handleOpenLoanModal(device)
-                      : undefined
-                  }
-                  secondaryButtonText={
-                    isUnavailable
-                      ? isSubscribed
-                        ? "Unsubscribe"
-                        : "Notify When Available"
-                      : undefined
-                  }
-                  secondaryButtonDisabled={isSubscribing}
-                  onSecondaryButtonClick={
-                    isUnavailable
-                      ? () => handleNotificationSubscribe(device.id)
-                      : undefined
-                  }
-                  isSubscribed={isSubscribed}
-                />
+                <div key={device.id} className="relative">
+                  <DeviceCard
+                    image={
+                      device.image ||
+                      `https://placehold.co/400x300/e0e7ff/4f46e5?text=${encodeURIComponent(
+                        device.name
+                      )}`
+                    }
+                    name={device.name}
+                    category={
+                      device.category.charAt(0).toUpperCase() +
+                      device.category.slice(1)
+                    }
+                    status={
+                      device.status === "available"
+                        ? "Available"
+                        : device.status === "on-loan"
+                        ? "On Loan"
+                        : device.status.charAt(0).toUpperCase() +
+                          device.status.slice(1)
+                    }
+                    specs={device.description}
+                    buttonText={
+                      !isAuthenticated && isAvailable
+                        ? "Sign in to Loan"
+                        : isAvailable
+                        ? "Loan Device"
+                        : "Unavailable"
+                    }
+                    buttonDisabled={!canLoan}
+                    onButtonClick={
+                      !isAuthenticated && isAvailable
+                        ? () => loginWithRedirect()
+                        : canLoan
+                        ? () => handleOpenLoanModal(device)
+                        : undefined
+                    }
+                    secondaryButtonText={
+                      isUnavailable
+                        ? isSubscribed
+                          ? "Unsubscribe"
+                          : "Notify When Available"
+                        : undefined
+                    }
+                    secondaryButtonDisabled={isSubscribing}
+                    onSecondaryButtonClick={
+                      isUnavailable
+                        ? () => {
+                            if (isSubscribed) {
+                              handleNotificationSubscribe(device.id, []);
+                            } else {
+                              setNotificationMenuOpen(menuOpen ? null : device.id);
+                            }
+                          }
+                        : undefined
+                    }
+                    isSubscribed={isSubscribed}
+                  />
+                  {/* Notification Type Menu */}
+                  {menuOpen && isUnavailable && !isSubscribed && (
+                    <div className="absolute z-10 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg p-4">
+                      <h4 className="text-sm font-semibold text-gray-900 mb-3">Select notification methods:</h4>
+                      <div className="space-y-2">
+                        <label className="flex items-center space-x-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={selectedNotificationTypes.has('email')}
+                            onChange={() => toggleNotificationType('email')}
+                            className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                          />
+                          <span className="text-sm text-gray-700">📧 Email</span>
+                        </label>
+                        <label className="flex items-center space-x-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={selectedNotificationTypes.has('sms')}
+                            onChange={() => toggleNotificationType('sms')}
+                            className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                          />
+                          <span className="text-sm text-gray-700">📱 SMS</span>
+                        </label>
+                        <label className="flex items-center space-x-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={selectedNotificationTypes.has('push')}
+                            onChange={() => toggleNotificationType('push')}
+                            className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                          />
+                          <span className="text-sm text-gray-700">🔔 Push Notification</span>
+                        </label>
+                      </div>
+                      <div className="flex space-x-2 mt-4">
+                        <button
+                          onClick={() => handleNotificationSubscribe(device.id, Array.from(selectedNotificationTypes))}
+                          disabled={selectedNotificationTypes.size === 0}
+                          className="flex-1 py-2 px-4 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                        >
+                          Subscribe
+                        </button>
+                        <button
+                          onClick={() => setNotificationMenuOpen(null)}
+                          className="flex-1 py-2 px-4 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               );
             })}
           </div>

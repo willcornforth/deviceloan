@@ -1,8 +1,4 @@
-export type NotificationType = 
-  | 'product-released'
-  | 'loan-approved'
-  | 'loan-rejected'
-  | 'loan-returned';
+export type NotificationType = 'email' | 'sms' | 'push';
 
 export type NotificationStatus = 'pending' | 'sent' | 'failed';
 
