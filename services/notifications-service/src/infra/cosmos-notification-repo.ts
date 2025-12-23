@@ -33,12 +33,13 @@ export class CosmosNotificationRepo implements NotificationRepo {
 			],
 		};
 
-		// Query within the user's partition for efficiency
+		// Query within the user's partition
 		const { resources } = await this.container.items
 			.query(querySpec, { partitionKey: userId })
 			.fetchAll();
 		
 		for (const item of resources) {
+			// Use userId as the partition key value
 			await this.container.item(item.id, userId).delete();
 		}
 	}
@@ -65,7 +66,7 @@ export class CosmosNotificationRepo implements NotificationRepo {
 			],
 		};
 
-		// Query within the user's partition for efficiency
+		// Query within the user's partition
 		const { resources } = await this.container.items
 			.query(querySpec, { partitionKey: userId })
 			.fetchAll();
@@ -91,7 +92,7 @@ export class CosmosNotificationRepo implements NotificationRepo {
 			],
 		};
 
-		// Query within the user's partition for efficiency
+		// Query within the user's partition
 		const { resources } = await this.container.items
 			.query(querySpec, { partitionKey: userId })
 			.fetchAll();
@@ -120,8 +121,8 @@ export class CosmosNotificationRepo implements NotificationRepo {
 			if (sentAt) item.sentAt = sentAt;
 			if (error) item.error = error;
 			
-			await this.container.item(item.id, item.partitionKey).replace(item);
-		}userId
+			await this.container.item(item.id, item.userId).replace(item);
+		}
 	}
 
 	private toPreference(doc: any): NotificationPreference {
