@@ -30,6 +30,17 @@ export class ServiceConfig {
     return new HttpClient(config);
   }
 
+  static getNotificationsService(): HttpClient {
+    const config: HttpClientConfig = {
+      baseUrl: this.validateConfig(
+        'Notifications',
+        process.env.NOTIFICATIONS_SERVICE_BASE_URL
+      ),
+      hostKey: process.env.NOTIFICATIONS_SERVICE_HOST_KEY,
+    };
+    return new HttpClient(config);
+  }
+
   static getAuth0Config() {
     const domain = process.env.AUTH0_DOMAIN;
     const audience = process.env.AUTH0_AUDIENCE;
