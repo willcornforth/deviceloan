@@ -135,11 +135,11 @@ function Loans() {
                   />
                 ))}
               </div>
+            )
+          )}
 
         {/* History Tab */}
-          )
-          )}
-          {activeTab === 'history' && (
+        {activeTab === 'history' && (
             pastLoans.length === 0 ? (
               <div className="text-center py-12">
                 <p className="text-gray-500 text-lg">You have no loan history.</p>
@@ -152,13 +152,15 @@ function Loans() {
                     image={`https://placehold.co/400x300/e0e7ff/4f46e5?text=${loan.product?.name ?? 'Name Unavailable'}`}
                     device={loan.product?.name ?? 'Name Unavailable'}
                     category={loan.product?.category ?? 'Category Unavailable'}
-                      status={loan.status}
+                    loanDate={formatDate(loan.loanDate)}
+                    returnDate={formatDate(loan.dueDate)}
+                    status={loan.status}
                     isActive={false}
                   />
                 ))}
               </div>
+            )
           )}
-        </div>
       </div>
     </div>
   );
