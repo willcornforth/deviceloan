@@ -4,6 +4,8 @@ export type NotificationType =
   | 'loan-rejected'
   | 'loan-returned';
 
+export type NotificationStatus = 'pending' | 'sent' | 'failed';
+
 export interface NotificationPreference {
   id: string;
   userId: string;
@@ -15,11 +17,15 @@ export interface NotificationPreference {
 export interface Notification {
   id: string;
   userId: string;
-  productId?: string;
   type: NotificationType;
+  subject: string;
   message: string;
-  sentAt: string;
-  metadata?: Record<string, any>;
+  status: NotificationStatus;
+  productId?: string;
+  loanId?: string;
+  createdAt: Date;
+  sentAt?: Date;
+  error?: string;
 }
 
 export interface NotificationHistory {

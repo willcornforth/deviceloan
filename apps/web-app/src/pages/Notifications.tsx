@@ -68,7 +68,15 @@ function Notifications() {
   };
 
   const formatDate = (dateString: string): string => {
+    if (!dateString) return 'N/A';
+    
     const date = new Date(dateString);
+    
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+      return 'Invalid Date';
+    }
+    
     return date.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
@@ -184,34 +192,56 @@ function Notifications() {
               </div>
             ) : (
               <div className="space-y-4">
-                {history.map((notification) => (
-                  <div
-                    key={notification.id}
-                    className="bg-white border border-gray-200 rounded-lg p-6"
-                  >
-                    <div className="flex items-start">
-                      <div className="flex-shrink-0">
-                        <BellIcon className="h-6 w-6 text-indigo-600" />
-                      </div>
-                      <div className="ml-3 flex-1">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-                            {formatNotificationType(notification.type)}
-                          </span>
-                          <span className="text-sm text-gray-500">
-                            {formatDate(notification.sentAt)}
-                          </span>
+                {history.map((notification) => {
+                  const displayDate = notification.sentAt || notification.createdAt;
+                  const isFailed = notification.status === 'failed';
+                  
+                  return (
+                    <div
+                      key={notification.id}
+                      className="bg-white border border-gray-200 rounded-lg p-6"
+                    >
+                      <div className="flex items-start">
+                        <div className="flex-shrink-0">
+                          <BellIcon className={`h-6 w-6 ${isFailed ? 'text-red-600' : 'text-indigo-600'}`} />
                         </div>
-                        <p className="text-sm text-gray-900">{notification.message}</p>
-                        {notification.productId && (
-                          <p className="mt-1 text-sm text-gray-500">
-                            Device: {getProductName(notification.productId)}
-                          </p>
-                        )}
+                        <div className="ml-3 flex-1">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                isFailed ? 'bg-red-100 text-red-800' : 'bg-indigo-100 text-indigo-800'
+                              }`}>
+                                {formatNotificationType(notification.type)}
+                              </span>
+                              {isFailed && (
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                  Failed
+                                </span>
+                              )}
+                            </div>
+                            <span className="text-sm text-gray-500">
+                              {formatDate(displayDate instanceof Date ? displayDate.toISOString() : displayDate)}
+                            </span>
+                          </div>
+                          <h4 className="text-sm font-medium text-gray-900 mb-1">
+                            {notification.subject}
+                          </h4>
+                          <p className="text-sm text-gray-900">{notification.message}</p>
+                          {notification.productId && (
+                            <p className="mt-1 text-sm text-gray-500">
+                              Device: {getProductName(notification.productId)}
+                            </p>
+                          )}
+                          {isFailed && notification.error && (
+                            <p className="mt-2 text-sm text-red-600">
+                              Error: {notification.error}
+                            </p>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
