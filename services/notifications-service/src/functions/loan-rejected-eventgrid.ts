@@ -13,7 +13,12 @@ async function loanRejectedHandler(
 		const loanEvent: LoanEventData = event.data as unknown as LoanEventData;
 		const config = createAppConfig();
 
-		await handleLoanRejected(loanEvent, config.notificationRepo, config.emailSender);
+		await handleLoanRejected(
+			loanEvent,
+			config.notificationRepo,
+			config.emailSender,
+			config.userService
+		);
 
 		context.log('Loan.Rejected event processed successfully');
 	} catch (error: any) {

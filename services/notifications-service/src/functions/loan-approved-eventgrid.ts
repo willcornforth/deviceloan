@@ -13,7 +13,12 @@ async function loanApprovedHandler(
 		const loanEvent: LoanEventData = event.data as unknown as LoanEventData;
 		const config = createAppConfig();
 
-		await handleLoanApproved(loanEvent, config.notificationRepo, config.emailSender);
+		await handleLoanApproved(
+			loanEvent,
+			config.notificationRepo,
+			config.emailSender,
+			config.userService
+		);
 
 		context.log('Loan.Approved event processed successfully');
 	} catch (error: any) {

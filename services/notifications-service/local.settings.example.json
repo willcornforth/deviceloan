@@ -8,6 +8,9 @@
     "COSMOS_DATABASE": "deviceloan-notifications",
     "COSMOS_CONTAINER": "notifications",
     "COMMUNICATION_CONNECTION_STRING": "endpoint=https://your-acs-resource.communication.azure.com/;accesskey=your-access-key",
-    "SENDER_EMAIL_ADDRESS": "DoNotReply@deviceloan.com"
+    "SENDER_EMAIL_ADDRESS": "DoNotReply@deviceloan.com",
+    "AUTH0_DOMAIN": "your-tenant.auth0.com",
+    "AUTH0_CLIENT_ID": "your-m2m-client-id",
+    "AUTH0_CLIENT_SECRET": "your-m2m-client-secret"
   }
 }

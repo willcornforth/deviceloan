@@ -13,7 +13,12 @@ async function loanReturnedHandler(
 		const loanEvent: LoanEventData = event.data as unknown as LoanEventData;
 		const config = createAppConfig();
 
-		await handleLoanReturned(loanEvent, config.notificationRepo, config.emailSender);
+		await handleLoanReturned(
+			loanEvent,
+			config.notificationRepo,
+			config.emailSender,
+			config.userService
+		);
 
 		context.log('Loan.Returned event processed successfully');
 	} catch (error: any) {

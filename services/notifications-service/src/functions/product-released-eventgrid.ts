@@ -13,7 +13,12 @@ async function productReleasedHandler(
 		const productEvent: ProductEventData = event.data as unknown as ProductEventData;
 		const config = createAppConfig();
 
-		await handleProductReleased(productEvent, config.notificationRepo, config.emailSender);
+		await handleProductReleased(
+			productEvent,
+			config.notificationRepo,
+			config.emailSender,
+			config.userService
+		);
 
 		context.log('Product.Released event processed successfully');
 	} catch (error: any) {

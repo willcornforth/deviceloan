@@ -2,11 +2,13 @@ import { randomUUID } from 'crypto';
 import { ProductEventData } from '../domain/events';
 import { Notification, NotificationRepo } from '../domain/notification';
 import { EmailSender } from '../domain/email-sender';
+import { UserService } from '../domain/user-service';
 
 export async function handleProductReleased(
 	event: ProductEventData,
 	repo: NotificationRepo,
-	emailSender: EmailSender
+	emailSender: EmailSender,
+	userService: UserService
 ): Promise<void> {
 	const preferences = await repo.getPreferencesByProduct(event.productId);
 
@@ -26,8 +28,11 @@ export async function handleProductReleased(
 			const saved = await repo.saveNotification(notification);
 
 			try {
+				// Get user email from Auth0
+				const userInfo = await userService.getUserInfo(pref.userId);
+				
 				await emailSender.send(
-					pref.userId,
+					userInfo.email,
 					notification.subject,
 					notification.message
 				);
