@@ -3,7 +3,6 @@ import PageBanner from '../components/PageBanner';
 import TabSwitch from '../components/TabSwitch';
 import LoanCard from '../components/LoanCard';
 import { useLoans } from '../hooks/useLoans';
-import { useLoanService } from '../hooks/useLoanService';
 
 type TabType = 'pending' | 'active' | 'history';
 
@@ -12,24 +11,6 @@ type TabType = 'pending' | 'active' | 'history';
 function Loans() {
   const [activeTab, setActiveTab] = useState<TabType>('pending');
   const { activeLoans, pendingLoans, pastLoans, loading, error, refetch } = useLoans();
-  const { getLoanService } = useLoanService();
-  const [returningLoanId, setReturningLoanId] = useState<string | null>(null);
-
-  const handleReturnDevice = async (loanId: string) => {
-    try {
-      setReturningLoanId(loanId);
-			
-      const service = await getLoanService();
-      await service.returnLoan({ loanId });
-
-      await refetch();
-    } catch (err) {
-      console.error('Failed to return device:', err);
-      alert(err instanceof Error ? err.message : 'Failed to return device');
-    } finally {
-      setReturningLoanId(null);
-    }
-  };
 
   const formatDate = (date: Date | string): string => {
     const d = new Date(date);
@@ -103,9 +84,7 @@ function Loans() {
                     loanDate={formatDate(loan.loanDate)}
                     returnDate={formatDate(loan.dueDate)}
                     status={loan.status}
-                    isActive={true}
-                    onReturn={() => handleReturnDevice(loan.id)}
-                    isReturning={returningLoanId === loan.id}
+                    isActive={false}
                   />
                 ))}
               </div>
@@ -131,9 +110,7 @@ function Loans() {
                     status={loan.status}
                     isActive={true}
                     onReturn={() => handleReturnDevice(loan.id)}
-                    isReturning={returningLoanId === loan.id}
-                  />
-                ))}
+                    isReturninfalse
               </div>
             )
           )}
