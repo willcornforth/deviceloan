@@ -3,6 +3,7 @@ export { getLoanById } from "./getLoanById";
 export { listLoansByUserId } from "./listLoansByUserId";
 export { listLoansByProductId } from "./listLoansByProductId";
 export { listPendingApprovalLoans } from "./listPendingApprovalLoans";
+export { listActiveLoans } from "./listActiveLoans";
 export { updateLoan } from "./updateLoan";
 export { returnLoan } from "./returnLoan";
 export { rejectLoan } from "./rejectLoan";

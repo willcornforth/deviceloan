@@ -8,6 +8,7 @@ export interface LoanRepo {
   readonly listByUserId: (userId: string) => Promise<readonly Loan[]>;
   readonly listByProductId: (productId: string) => Promise<readonly Loan[]>;
   readonly listPendingApproval: () => Promise<readonly Loan[]>;
+  readonly listActive: () => Promise<readonly Loan[]>;
   readonly update: (loan: Loan) => Promise<Loan>;
   readonly delete: (id: LoanId) => Promise<void>;
 }
