@@ -6,6 +6,7 @@ import {
   ReturnLoanInput,
   ReturnLoanOutput,
   ListPendingApprovalsOutput,
+  ListActiveLoansOutput,
   ApproveLoanInput,
   ApproveLoanOutput,
   RejectLoanInput,
@@ -161,6 +162,40 @@ export class HttpLoanService implements LoanService {
         .catch(() => ({ message: response.statusText }));
       throw new Error(
         `Failed to list pending approvals: ${errorData.message || response.statusText}`
+      );
+    }
+
+    const json = await response.json();
+    return {
+      loans: json.data,
+    };
+  }
+
+  async listActiveLoans(): Promise<ListActiveLoansOutput> {
+    const baseUrl = import.meta.env.DEV
+      ? "/api"
+      : import.meta.env.VITE_API_GATEWAY_BASE_URL;
+
+    if (!baseUrl) {
+      throw new Error(
+        "Missing API Gateway base URL configuration. Please check your environment variables."
+      );
+    }
+
+    const response = await fetch(`${baseUrl}/loans/status/active`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${this.token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response
+        .json()
+        .catch(() => ({ message: response.statusText }));
+      throw new Error(
+        `Failed to list active loans: ${errorData.message || response.statusText}`
       );
     }
 

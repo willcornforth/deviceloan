@@ -30,6 +30,10 @@ export type ListPendingApprovalsOutput = {
 	readonly loans: LoanProductDTO[];
 }
 
+export type ListActiveLoansOutput = {
+	readonly loans: LoanProductDTO[];
+}
+
 export type ApproveLoanInput = {
 	readonly loanId: LoanId;
 }
@@ -51,6 +55,7 @@ export interface LoanService {
 	listLoans(input: ListLoansInput): Promise<ListLoansOutput>;
 	returnLoan(input: ReturnLoanInput): Promise<ReturnLoanOutput>;
 	listPendingApprovals(): Promise<ListPendingApprovalsOutput>;
+	listActiveLoans(): Promise<ListActiveLoansOutput>;
 	approveLoan(input: ApproveLoanInput): Promise<ApproveLoanOutput>;
 	rejectLoan(input: RejectLoanInput): Promise<RejectLoanOutput>;
 }

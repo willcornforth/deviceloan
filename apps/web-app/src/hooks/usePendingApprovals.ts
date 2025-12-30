@@ -19,12 +19,22 @@ export const usePendingApprovals = () => {
 
         try {
             setLoading(true);
-            const token = await getAccessTokenSilently();
+            setError(null);
+            
+            let token: string;
+            try {
+                token = await getAccessTokenSilently();
+            } catch (tokenError) {
+                throw new Error('Failed to retrieve authentication token. Please log in again.');
+            }
+            
             const service = new HttpLoanService(token);
             const output = await service.listPendingApprovals();
             setPendingLoans(output.loans);
         } catch (err) {
-            setError(err instanceof Error ? err : new Error('Unknown error'));
+            const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred while fetching pending approvals';
+            setError(new Error(errorMessage));
+            console.error('Error fetching pending approvals:', err);
         } finally {
             setLoading(false);
         }
