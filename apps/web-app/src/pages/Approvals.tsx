@@ -128,7 +128,7 @@ function Approvals() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Tabs */}
-        <TabSwitch tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
+        <TabSwitch tabs={tabs} activeTab={activeTab} onTabChange={(tabId) => setActiveTab(tabId as TabId)} />
 
         {/* Pending Approvals Tab */}
         {activeTab === 'pending' && (

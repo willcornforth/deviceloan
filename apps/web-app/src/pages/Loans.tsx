@@ -10,7 +10,7 @@ type TabType = 'pending' | 'active' | 'history';
 
 function Loans() {
   const [activeTab, setActiveTab] = useState<TabType>('pending');
-  const { activeLoans, pendingLoans, pastLoans, loading, error, refetch } = useLoans();
+  const { activeLoans, pendingLoans, pastLoans, loading, error } = useLoans();
 
   const formatDate = (date: Date | string): string => {
     const d = new Date(date);
@@ -108,9 +108,9 @@ function Loans() {
                     loanDate={formatDate(loan.loanDate)}
                     returnDate={formatDate(loan.dueDate)}
                     status={loan.status}
-                    isActive={true}
-                    onReturn={() => handleReturnDevice(loan.id)}
-                    isReturninfalse
+                    isActive={false}
+                  />
+                ))}
               </div>
             )
           )}

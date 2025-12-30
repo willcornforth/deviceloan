@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 import { HttpLoanService } from '../infra/http-loan-service';
-import { LoanProductDTO, LoanStatus } from '../domain/loans';
+import { LoanProductDTO } from '../domain/loans';
 
 export const usePendingApprovals = () => {
     const { getAccessTokenSilently, isAuthenticated, isLoading: isAuthLoading } = useAuth0();
