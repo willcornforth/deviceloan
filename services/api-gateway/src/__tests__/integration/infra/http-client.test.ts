@@ -13,6 +13,7 @@ describe('HttpClient Integration Tests', () => {
 	beforeEach(async () => {
 		mockContext = {
 			log: () => {},
+			error: () => {},
 		};
 
 		// Create a mock HTTP server
@@ -107,6 +108,7 @@ describe('HttpClient Integration Tests', () => {
 	});
 
 	it('should throw HttpClientError on 404', async () => {
+		// 404 is a client error and should not retry
 		await expect(
 			client.request(
 				{
@@ -116,18 +118,38 @@ describe('HttpClient Integration Tests', () => {
 				mockContext
 			)
 		).rejects.toThrow(HttpClientError);
-	});
 
-	it('should throw HttpClientError on 500', async () => {
 		await expect(
 			client.request(
 				{
 					method: 'GET',
-					path: '/api/error',
+					path: '/api/notfound',
 				},
 				mockContext
 			)
-		).rejects.toThrow(HttpClientError);
+		).rejects.toMatchObject({
+			statusCode: 404,
+		});
+	});
+
+	it('should retry and eventually throw HttpClientError on 500', async () => {
+		// Configure client with fewer retries for faster test
+		const retryClient = new HttpClient({
+			baseUrl: `http://localhost:${serverPort}`,
+			maxRetries: 1,
+			retryDelayMs: 10,
+		});
+
+		const error = await retryClient.request(
+			{
+				method: 'GET',
+				path: '/api/error',
+			},
+			mockContext
+		).catch(e => e);
+
+		expect(error).toBeInstanceOf(HttpClientError);
+		expect(error.statusCode).toBe(500);
 	});
 
 	it('should include host key in headers when configured', async () => {

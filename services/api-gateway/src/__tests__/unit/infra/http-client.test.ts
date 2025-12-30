@@ -18,6 +18,7 @@ describe('HttpClient', () => {
 
 		mockContext = {
 			log: vi.fn(),
+			error: vi.fn(),
 		};
 
 		vi.clearAllMocks();
@@ -132,6 +133,7 @@ describe('HttpClient', () => {
 		});
 
 		it('should throw HttpClientError on non-ok response', async () => {
+			// 404 should not retry (client error)
 			vi.mocked(fetch).mockResolvedValue({
 				ok: false,
 				status: 404,
@@ -148,6 +150,75 @@ describe('HttpClient', () => {
 					mockContext
 				)
 			).rejects.toThrow(HttpClientError);
+
+			// Should only attempt once (no retry for 4xx errors)
+			expect(fetch).toHaveBeenCalledTimes(1);
+		});
+
+		it('should retry on 500 server errors', async () => {
+			// Configure client with 2 retries for faster test
+			const retryClient = new HttpClient({
+				baseUrl: 'http://localhost:7071',
+				maxRetries: 2,
+				retryDelayMs: 10, // Short delay for testing
+			});
+
+			vi.mocked(fetch).mockResolvedValue({
+				ok: false,
+				status: 500,
+				statusText: 'Internal Server Error',
+				text: async () => 'Server error',
+			} as Response);
+
+			await expect(
+				retryClient.request(
+					{
+						method: 'GET',
+						path: '/api/error',
+					},
+					mockContext
+				)
+			).rejects.toThrow(HttpClientError);
+
+			// Should attempt 3 times total (initial + 2 retries)
+			expect(fetch).toHaveBeenCalledTimes(3);
+		});
+
+		it('should succeed after retry', async () => {
+			// Configure client with retry
+			const retryClient = new HttpClient({
+				baseUrl: 'http://localhost:7071',
+				maxRetries: 2,
+				retryDelayMs: 10,
+			});
+
+			const mockData = { success: true };
+
+			// Fail first, succeed second
+			vi.mocked(fetch)
+				.mockResolvedValueOnce({
+					ok: false,
+					status: 503,
+					statusText: 'Service Unavailable',
+					text: async () => 'Service temporarily unavailable',
+				} as Response)
+				.mockResolvedValueOnce({
+					ok: true,
+					status: 200,
+					headers: new Headers({ 'content-type': 'application/json' }),
+					json: async () => mockData,
+				} as Response);
+
+			const result = await retryClient.request<typeof mockData>(
+				{
+					method: 'GET',
+					path: '/api/test',
+				},
+				mockContext
+			);
+
+			expect(result).toEqual(mockData);
+			expect(fetch).toHaveBeenCalledTimes(2);
 		});
 
 		it('should log requests', async () => {
