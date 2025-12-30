@@ -19,8 +19,15 @@ export async function returnLoan(
 			request,
 			context
 		);
+
 		if (error) {
 			return error;
+		}
+
+		// Require return:all-loans permission for all product returns
+		const permissionError = AuthMiddleware.requirePermission(authContext, 'return:all-loans', context);
+		if (permissionError) {
+			return ResponseBuilder.forbidden("Only administrators with return:all-loans permission can return products");
 		}
 
 		// Get loan ID from route parameters
@@ -34,27 +41,6 @@ export async function returnLoan(
 
 		// Get the loans service client
 		const loansService = ServiceConfig.getLoansService();
-
-		// First, fetch the loan to validate ownership
-		const existingLoan: any = await loansService.request(
-			{
-				method: "GET",
-				path: `/loans/${loanId}`,
-			},
-			context
-		);
-
-		// Extract loan from response if wrapped
-		const loanData = existingLoan?.loan ?? existingLoan;
-
-		// Validate the user is returning their own loan (or has admin scope)
-		if (loanData?.userId !== authContext.subject) {
-			const permissionError = AuthMiddleware.requirePermission(authContext, 'return:all-loans', context);
-			if (permissionError) {
-				context.log(`User ${authContext.subject} attempted to return loan belonging to ${loanData?.userId}`);
-				return ResponseBuilder.forbidden("You can only return your own loans");
-			}
-		}
 
 		// Call the loans service to return the loan
 		const loan: any = await loansService.request(
