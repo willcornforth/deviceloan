@@ -42,7 +42,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # Step 4: Build the React application
+      # Step 4: Run tests (Vitest) during CI
+      - name: Run tests
+        run: npm test
+
+      # Step 5: Build the React application
       # Vite environment variables are passed at build time via the env section
       - name: Build React app
         run: npm run build
@@ -53,7 +57,7 @@ jobs:
           VITE_AUTH0_AUDIENCE: ${{ secrets.VITE_AUTH0_AUDIENCE }}
           VITE_API_GATEWAY_BASE_URL: ${{ secrets.VITE_API_GATEWAY_BASE_URL }}
 
-      # Step 5: Clear existing content from Azure Blob Storage
+      # Step 6: Clear existing content from Azure Blob Storage
       # This ensures a clean deployment without leftover files from previous builds
       - name: Clear existing content from Azure Blob Storage
         run: |
@@ -61,7 +65,7 @@ jobs:
             --source '$web' \
             --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}"
 
-      # Step 6: Deploy the build output to Azure Blob Storage
+      # Step 7: Deploy the build output to Azure Blob Storage
       # The $web container is used for static website hosting in Azure Storage
       # Uses the storage account connection string for authentication
       - name: Deploy to Azure Blob Storage
