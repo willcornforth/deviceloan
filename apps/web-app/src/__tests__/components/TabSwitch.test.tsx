@@ -19,9 +19,9 @@ describe('TabSwitch', () => {
       />
     );
 
-    expect(screen.getByRole('button', { name: 'Available (5)' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Loaned (3)' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Maintenance (1)' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Available\s*5/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Loaned\s*3/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Maintenance\s*1/ })).toBeInTheDocument();
   });
 
   it('highlights the active tab', () => {
@@ -33,8 +33,8 @@ describe('TabSwitch', () => {
       />
     );
 
-    const loanedTab = screen.getByRole('button', { name: 'Loaned (3)' });
-    expect(loanedTab).toHaveClass('bg-white', 'text-indigo-700', 'shadow');
+    const loanedTab = screen.getByRole('button', { name: /Loaned\s*3/ });
+    expect(loanedTab).toHaveClass('border-indigo-500', 'text-indigo-600');
   });
 
   it('does not highlight inactive tabs', () => {
@@ -46,9 +46,9 @@ describe('TabSwitch', () => {
       />
     );
 
-    const availableTab = screen.getByRole('button', { name: 'Available (5)' });
-    expect(availableTab).toHaveClass('text-gray-600');
-    expect(availableTab).not.toHaveClass('bg-white', 'text-indigo-700');
+    const availableTab = screen.getByRole('button', { name: /Available\s*5/ });
+    expect(availableTab).toHaveClass('border-transparent', 'text-gray-500');
+    expect(availableTab).not.toHaveClass('border-indigo-500', 'text-indigo-600');
   });
 
   it('calls onTabChange when a tab is clicked', async () => {
@@ -63,7 +63,7 @@ describe('TabSwitch', () => {
       />
     );
 
-    const loanedTab = screen.getByRole('button', { name: 'Loaned (3)' });
+    const loanedTab = screen.getByRole('button', { name: /Loaned\s*3/ });
     await user.click(loanedTab);
 
     expect(handleTabChange).toHaveBeenCalledWith('loaned');
@@ -80,7 +80,7 @@ describe('TabSwitch', () => {
       />
     );
 
-    expect(screen.getByRole('button', { name: 'All Items (10)' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /All Items\s*10/ })).toBeInTheDocument();
   });
 
   it('handles zero count correctly', () => {
@@ -96,6 +96,7 @@ describe('TabSwitch', () => {
       />
     );
 
-    expect(screen.getByRole('button', { name: 'Empty (0)' })).toBeInTheDocument();
+    // Count badges render only when count > 0
+    expect(screen.getByRole('button', { name: 'Empty' })).toBeInTheDocument();
   });
 });
