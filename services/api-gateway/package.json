@@ -8,9 +8,17 @@
     "clean": "rimraf dist",
     "prestart": "npm run clean && npm run build",
     "start": "func start",
-    "test": "echo \"No tests yet...\""
+    "sync-products": "node scripts/sync-products.js",
+    "test": "vitest run",
+    "test:unit": "vitest run src/__tests__/unit",
+    "test:integration": "vitest run src/__tests__/integration",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@azure/cosmos": "^4.9.0",
+    "@azure/eventgrid": "^5.12.0",
     "@azure/functions": "^4.0.0",
     "jsonwebtoken": "^9.0.2",
     "jwks-rsa": "^3.2.0"
@@ -18,8 +26,10 @@
   "devDependencies": {
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^20.x",
+    "@vitest/ui": "^4.0.15",
     "rimraf": "^5.0.0",
-    "typescript": "^4.0.0"
+    "typescript": "^4.0.0",
+    "vitest": "^4.0.15"
   },
   "main": "dist/src/{index.js,functions/*.js}"
 }
