@@ -2,8 +2,10 @@
 
 import { CosmosProductRepo } from '../infra/cosmos-product-repo';
 import { ProductRepo } from '../domain/product-repo';
+import { ProductEventPublisher } from '../infra/eventgrid-products-publisher';
 
 let productRepoInstance: ProductRepo | null = null;
+let productEventPublisherInstance: ProductEventPublisher | null = null;
 
 export const getProductRepo = (): ProductRepo => {
 	if (!productRepoInstance) {
@@ -34,4 +36,12 @@ export const getProductRepo = (): ProductRepo => {
 	}
 
 	return productRepoInstance;
+};
+
+export const getProductEventPublisher = (): ProductEventPublisher => {
+	if (!productEventPublisherInstance) {
+		productEventPublisherInstance = new ProductEventPublisher();
+	}
+
+	return productEventPublisherInstance;
 };
