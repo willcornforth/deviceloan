@@ -1,7 +1,7 @@
 import { app, EventGridEvent, InvocationContext } from '@azure/functions';
 import { createAppConfig } from '../config/app-services';
 import { handleLoanReturned } from '../app/handle-loan-returned';
-import { LoanReturnedEvent } from '../domain/events';
+import { LoanEventData } from '../domain/events';
 
 async function loanReturnedHandler(
 	event: EventGridEvent,
@@ -10,10 +10,15 @@ async function loanReturnedHandler(
 	try {
 		context.log('Loan.Returned event received:', event);
 
-		const loanEvent: LoanReturnedEvent = event.data as unknown as LoanReturnedEvent;
+		const loanEvent: LoanEventData = event.data as unknown as LoanEventData;
 		const config = createAppConfig();
 
-		await handleLoanReturned(loanEvent, config.notificationRepo, config.emailSender);
+		await handleLoanReturned(
+			loanEvent,
+			config.notificationRepo,
+			config.emailSender,
+			config.userService
+		);
 
 		context.log('Loan.Returned event processed successfully');
 	} catch (error: any) {

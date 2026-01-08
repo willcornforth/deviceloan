@@ -1,30 +1,35 @@
 import { randomUUID } from 'crypto';
-import { LoanReturnedEvent } from '../domain/events';
+import { LoanEventData } from '../domain/events';
 import { Notification, NotificationRepo } from '../domain/notification';
 import { EmailSender } from '../domain/email-sender';
+import { UserService } from '../domain/user-service';
 
 export async function handleLoanReturned(
-	event: LoanReturnedEvent,
+	event: LoanEventData,
 	repo: NotificationRepo,
-	emailSender: EmailSender
+	emailSender: EmailSender,
+	userService: UserService
 ): Promise<void> {
 	const notification: Notification = {
 		id: randomUUID(),
 		userId: event.userId,
 		type: 'email',
-		subject: `Loan Returned: ${event.productName}`,
-		message: `Thank you for returning "${event.productName}". The loan has been marked as returned.`,
+		subject: `Loan Returned: ${event.id}`,
+		message: `Thank you for returning "Loan ${event.id}". The loan has been marked as returned.`,
 		status: 'pending',
 		productId: event.productId,
-		loanId: event.loanId,
+		loanId: event.id,
 		createdAt: new Date(),
 	};
 
 	const saved = await repo.saveNotification(notification);
 
 	try {
+		// Get user email from Auth0
+		const userInfo = await userService.getUserInfo(event.userId);
+		
 		await emailSender.send(
-			event.userId,
+			userInfo.email,
 			notification.subject,
 			notification.message
 		);

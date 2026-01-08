@@ -18,7 +18,6 @@ export class CosmosNotificationRepo implements NotificationRepo {
 		const doc = {
 			...preference,
 			type: 'preference',
-			partitionKey: `preference-${preference.userId}`,
 		};
 		const { resource } = await this.container.items.create(doc);
 		return this.toPreference(resource!);
@@ -34,10 +33,14 @@ export class CosmosNotificationRepo implements NotificationRepo {
 			],
 		};
 
-		const { resources } = await this.container.items.query(querySpec).fetchAll();
+		// Query within the user's partition
+		const { resources } = await this.container.items
+			.query(querySpec, { partitionKey: userId })
+			.fetchAll();
 		
 		for (const item of resources) {
-			await this.container.item(item.id, item.partitionKey).delete();
+			// Use userId as the partition key value
+			await this.container.item(item.id, userId).delete();
 		}
 	}
 
@@ -63,7 +66,10 @@ export class CosmosNotificationRepo implements NotificationRepo {
 			],
 		};
 
-		const { resources } = await this.container.items.query(querySpec).fetchAll();
+		// Query within the user's partition
+		const { resources } = await this.container.items
+			.query(querySpec, { partitionKey: userId })
+			.fetchAll();
 		return resources.map(this.toPreference);
 	}
 
@@ -71,7 +77,6 @@ export class CosmosNotificationRepo implements NotificationRepo {
 		const doc = {
 			...notification,
 			type: 'notification',
-			partitionKey: `notification-${notification.userId}`,
 		};
 		const { resource } = await this.container.items.create(doc);
 		return this.toNotification(resource!);
@@ -87,7 +92,10 @@ export class CosmosNotificationRepo implements NotificationRepo {
 			],
 		};
 
-		const { resources } = await this.container.items.query(querySpec).fetchAll();
+		// Query within the user's partition
+		const { resources } = await this.container.items
+			.query(querySpec, { partitionKey: userId })
+			.fetchAll();
 		return resources.map(this.toNotification);
 	}
 
@@ -113,7 +121,7 @@ export class CosmosNotificationRepo implements NotificationRepo {
 			if (sentAt) item.sentAt = sentAt;
 			if (error) item.error = error;
 			
-			await this.container.item(item.id, item.partitionKey).replace(item);
+			await this.container.item(item.id, item.userId).replace(item);
 		}
 	}
 

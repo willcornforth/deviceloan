@@ -2,21 +2,16 @@ import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/fu
 import { createAppConfig } from '../config/app-services';
 import { getPreferences } from '../app/get-preferences';
 import { ResponseBuilder } from '../infra/response-builder';
-import { AuthMiddleware } from '../app/auth-middleware';
 
 async function getPreferencesHandler(
 	request: HttpRequest,
 	context: InvocationContext
 ): Promise<HttpResponseInit> {
 	try {
-		// Authenticate user
-		const { authContext, error } = await AuthMiddleware.authenticate(request, context);
-		if (error) {
-			return error;
+		const userId = request.query.get('userId');
+		if (!userId) {
+			return ResponseBuilder.badRequest('userId query parameter is required');
 		}
-
-		// Extract userId from authenticated user's subject
-		const userId = authContext.subject!;
 
 		const config = createAppConfig();
 		const result = await getPreferences({ userId }, config.notificationRepo);
@@ -30,7 +25,7 @@ async function getPreferencesHandler(
 
 app.http('get-preferences-http', {
 	methods: ['GET'],
-	authLevel: 'anonymous',
+	authLevel: 'function',
 	route: 'notifications/preferences',
 	handler: getPreferencesHandler,
 });
