@@ -10,5 +10,6 @@ export interface ListProductsDeps {
 export const listProducts = async (
 	deps: ListProductsDeps
 ): Promise<readonly Product[]> => {
-	return deps.repo.list(deps.availableOnly ?? false);
+	//Test
+	return deps.repo.list(deps.availableOnly ?? false); 
 };
