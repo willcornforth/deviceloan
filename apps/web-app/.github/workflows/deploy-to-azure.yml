@@ -63,7 +63,7 @@ jobs:
         run: |
           az storage blob delete-batch \
             --source '$web' \
-            --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}"
+            --connection-string "${{ secrets.PROD_AZURE_STORAGE_CONNECTION_STRING }}"
 
       # Step 7: Deploy the build output to Azure Blob Storage
       # The $web container is used for static website hosting in Azure Storage
@@ -73,5 +73,5 @@ jobs:
           az storage blob upload-batch \
             --destination '$web' \
             --source ./dist \
-            --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
+            --connection-string "${{ secrets.PROD_AZURE_STORAGE_CONNECTION_STRING }}" \
             --overwrite
