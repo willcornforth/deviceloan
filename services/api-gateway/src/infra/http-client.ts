@@ -87,11 +87,12 @@ export class HttpClient {
         }
 
         const url = `${this.baseUrl}${options.path}`;
+        const prefix = options.correlationContext ? `${options.correlationContext.getLogPrefix()} ` : '';
         
         if (attempt > 0) {
-          context.log(`${options.correlationContext?.getLogPrefix() || ''} Retry attempt ${attempt}/${this.maxRetries} for ${options.method} ${url}`);
+          context.log(`${prefix}Retry attempt ${attempt}/${this.maxRetries} for ${options.method} ${url}`);
         } else {
-          context.log(`${options.correlationContext?.getLogPrefix() || ''} ${options.method} ${url}`);
+          context.log(`${prefix}${options.method} ${url}`);
         }
 
         const response = await fetch(url, {
