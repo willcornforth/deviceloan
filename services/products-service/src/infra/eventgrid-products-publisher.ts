@@ -1,5 +1,7 @@
 import { EventGridPublisherClient, AzureKeyCredential } from '@azure/eventgrid';
+import { InvocationContext } from '@azure/functions';
 import { Product } from '../domain/product';
+import { CorrelationContext } from './correlation-context';
 
 export const ProductEventTypes = {
   Created: 'Product.Created',
@@ -20,6 +22,8 @@ export interface ProductReservedEventData {
   readonly reservedBy: string;
   readonly reservedAt: string;
   readonly returnDate: string;
+  readonly _correlationId?: string;
+  readonly _invocationId?: string;
 }
 
 export interface ProductEventData {
@@ -33,6 +37,8 @@ export interface ProductEventData {
   readonly createdAt: string;
   readonly reservedBy?: string;
   readonly reservedAt?: string;
+  readonly _correlationId?: string;
+  readonly _invocationId?: string;
 }
 
 interface EventPublisherClient {
@@ -132,12 +138,26 @@ export class ProductEventPublisher {
     await this.client.send([event]);
   }
 
-  async publishProductReserved(data: ProductReservedEventData): Promise<void> {
+  async publishProductReserved(
+    data: ProductReservedEventData,
+    context?: InvocationContext,
+    correlationContext?: CorrelationContext
+  ): Promise<void> {
+    context?.log(
+      `${correlationContext?.getLogPrefix() || ''} Publishing Product.Reserved event for ${data.productId}`
+    );
+
+    const eventData = {
+      ...data,
+      _correlationId: correlationContext?.correlationId,
+      _invocationId: correlationContext?.invocationId,
+    };
+
     const event = {
       eventType: ProductEventTypes.Reserved,
       subject: `products/${data.productId}`,
       dataVersion: '1.0',
-      data,
+      data: eventData,
     };
 
     await this.client.send([event]);

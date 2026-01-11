@@ -10,6 +10,7 @@ import {
 import { getProductRepo } from '../config/appServices';
 import { reserveProduct, ReserveProductParams } from '../app/reserve-product';
 import { productEventPublisher } from '../infra/eventgrid-products-publisher';
+import { CorrelationContext } from '../infra/correlation-context';
 
 interface ErrorResponse {
 	readonly error: string;
@@ -35,8 +36,17 @@ export async function reserveProductHttp(
 	context: InvocationContext
 ): Promise<HttpResponseInit> {
 	try {
+		// Extract correlation context from request headers
+		// Convert Headers object to Record<string, string | string[]> for compatibility
+		const headersRecord: Record<string, string | string[]> = {};
+		request.headers.forEach((value, key) => {
+			headersRecord[key] = value;
+		});
+		const correlationContext = CorrelationContext.fromContext(context, headersRecord);
+		const logPrefix = correlationContext.getLogPrefix();
+
 		const productId = request.params.id;
-		context.log(`Processing POST /products/${productId}/reserve request`);
+		context.log(`${logPrefix} Processing POST /products/${productId}/reserve request`);
 
 		if (!productId) {
 			return createErrorResponse(400, 'Bad Request', 'Product ID is required');
@@ -50,7 +60,14 @@ export async function reserveProductHttp(
 		}
 
 		const repo = getProductRepo();
-		const result = await reserveProduct({ repo, productId, params, eventPublisher: productEventPublisher });
+		const result = await reserveProduct({ 
+			repo, 
+			productId, 
+			params, 
+			eventPublisher: productEventPublisher,
+			correlationContext,
+			context
+		});
 
 		if (result.success === true) {
 			return {

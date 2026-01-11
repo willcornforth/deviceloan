@@ -1,12 +1,14 @@
 // Reserve product use case - application layer
 // Uses optimistic concurrency (ETag) to handle concurrent reservations
 
+import { InvocationContext } from '@azure/functions';
 import { Product, ProductId } from '../domain/product';
 import { ProductRepo, ConcurrencyError } from '../domain/product-repo';
 import {
 	ProductEventPublisher,
 	ProductReservedEventData,
 } from '../infra/eventgrid-products-publisher';
+import { CorrelationContext } from '../infra/correlation-context';
 
 export interface ReserveProductParams {
 	readonly userId: string;
@@ -18,6 +20,8 @@ export interface ReserveProductDeps {
 	readonly productId: ProductId;
 	readonly params: ReserveProductParams;
 	readonly eventPublisher?: ProductEventPublisher;
+	readonly correlationContext?: CorrelationContext;
+	readonly context?: InvocationContext;
 }
 
 export interface ReserveProductSuccess {
@@ -114,7 +118,7 @@ export const reserveProduct = async (
 			reservedAt: result.reservedAt.toISOString(),
 			returnDate: params.returnDate,
 		};
-		await eventPublisher.publishProductReserved(eventData);
+		await eventPublisher.publishProductReserved(eventData, deps.context, deps.correlationContext);
 	}
 
 	return {
