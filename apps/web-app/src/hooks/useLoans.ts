@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 import { HttpLoanService } from '../infra/http-loan-service';
+import { ServiceError } from '../infra/service-error-handler';
 import { LoanProductDTO, LoanStatus } from '../domain/loans';
 
 export const useLoans = () => {
@@ -24,7 +25,13 @@ export const useLoans = () => {
             const output = await service.listLoans({ userId: user.sub });
             setLoans(output.loans);
         } catch (err) {
-            setError(err instanceof Error ? err : new Error('Unknown error'));
+            const message = err instanceof ServiceError
+                ? err.userMessage
+                : err instanceof Error
+                    ? err.message
+                    : 'Something went wrong while loading your loans. Please try again.';
+            setError(new Error(message));
+            console.error('Error fetching loans:', err);
         } finally {
             setLoading(false);
         }

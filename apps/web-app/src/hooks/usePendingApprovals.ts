@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 import { HttpLoanService } from '../infra/http-loan-service';
 import { LoanProductDTO } from '../domain/loans';
+import { ServiceError } from '../infra/service-error-handler';
 
 export const usePendingApprovals = () => {
     const { getAccessTokenSilently, isAuthenticated, isLoading: isAuthLoading } = useAuth0();
@@ -32,8 +33,12 @@ export const usePendingApprovals = () => {
             const output = await service.listPendingApprovals();
             setPendingLoans(output.loans);
         } catch (err) {
-            const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred while fetching pending approvals';
-            setError(new Error(errorMessage));
+            const message = err instanceof ServiceError
+                ? err.userMessage
+                : err instanceof Error
+                    ? err.message
+                    : 'Something went wrong while loading pending approvals. Please try again.';
+            setError(new Error(message));
             console.error('Error fetching pending approvals:', err);
         } finally {
             setLoading(false);
