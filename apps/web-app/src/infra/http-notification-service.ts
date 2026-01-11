@@ -6,6 +6,7 @@ import {
   NotificationPreference, 
   NotificationHistory 
 } from '../domain/notifications';
+import { withErrorHandling } from './service-error-handler';
 
 export class HttpNotificationService implements NotificationService {
   constructor(private readonly token: string) {}
@@ -31,46 +32,38 @@ export class HttpNotificationService implements NotificationService {
   }
 
   async subscribe(request: SubscribeRequest): Promise<NotificationPreference> {
-    const response = await fetch(`${this.getBaseUrl()}/notifications/subscribe`, {
-      method: 'POST',
-      headers: this.getHeaders(),
-      body: JSON.stringify(request),
-    });
+    const response = await withErrorHandling<{ data: NotificationPreference }>(
+      () => fetch(`${this.getBaseUrl()}/notifications/subscribe`, {
+        method: 'POST',
+        headers: this.getHeaders(),
+        body: JSON.stringify(request),
+      }),
+      { operation: 'subscribe to notifications', resource: 'notifications' }
+    );
 
-    if (!response.ok) {
-      const error = await response.text().catch(() => response.statusText);
-      throw new Error(`Failed to subscribe to notifications: ${error}`);
-    }
-
-    const json = await response.json();
-    return json.data;
+    return response.data;
   }
 
   async unsubscribe(productId: string): Promise<void> {
-    const response = await fetch(`${this.getBaseUrl()}/notifications/unsubscribe/${productId}`, {
-      method: 'DELETE',
-      headers: this.getHeaders(),
-    });
-
-    if (!response.ok) {
-      const error = await response.text().catch(() => response.statusText);
-      throw new Error(`Failed to unsubscribe from notifications: ${error}`);
-    }
+    await withErrorHandling<void>(
+      () => fetch(`${this.getBaseUrl()}/notifications/unsubscribe/${productId}`, {
+        method: 'DELETE',
+        headers: this.getHeaders(),
+      }),
+      { operation: 'unsubscribe from notifications', resource: 'notifications' }
+    );
   }
 
   async getPreferences(): Promise<NotificationPreference[]> {
-    const response = await fetch(`${this.getBaseUrl()}/notifications/preferences`, {
-      method: 'GET',
-      headers: this.getHeaders(),
-    });
+    const response = await withErrorHandling<{ data: { preferences: NotificationPreference[] } }>(
+      () => fetch(`${this.getBaseUrl()}/notifications/preferences`, {
+        method: 'GET',
+        headers: this.getHeaders(),
+      }),
+      { operation: 'get notification preferences', resource: 'your notification preferences' }
+    );
 
-    if (!response.ok) {
-      const error = await response.text().catch(() => response.statusText);
-      throw new Error(`Failed to fetch notification preferences: ${error}`);
-    }
-
-    const json = await response.json();
-    return json.data.preferences || [];
+    return response.data.preferences || [];
   }
 
   async getHistory(limit?: number): Promise<NotificationHistory> {
@@ -79,17 +72,14 @@ export class HttpNotificationService implements NotificationService {
       url.searchParams.append('limit', limit.toString());
     }
 
-    const response = await fetch(url.toString(), {
-      method: 'GET',
-      headers: this.getHeaders(),
-    });
+    const response = await withErrorHandling<{ data: NotificationHistory }>(
+      () => fetch(url.toString(), {
+        method: 'GET',
+        headers: this.getHeaders(),
+      }),
+      { operation: 'get notification history', resource: 'your notification history' }
+    );
 
-    if (!response.ok) {
-      const error = await response.text().catch(() => response.statusText);
-      throw new Error(`Failed to fetch notification history: ${error}`);
-    }
-
-    const json = await response.json();
-    return json.data;
+    return response.data;
   }
 }

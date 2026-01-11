@@ -13,6 +13,7 @@ import {
   RejectLoanOutput,
   LoanService
 } from "../app/loan-service";
+import { withErrorHandling } from "./service-error-handler";
 
 export class HttpLoanService implements LoanService {
   constructor(private readonly token: string) {}
@@ -32,28 +33,19 @@ export class HttpLoanService implements LoanService {
       throw new Error("User ID is required to list loans");
     }
 
-    const response = await fetch(`${baseUrl}/users/${input.userId}/loans`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${this.token}`,
-        "Content-Type": "application/json",
-      },
-    });
-
-    if (!response.ok) {
-      const errorData = await response
-        .json()
-        .catch(() => ({ message: response.statusText }));
-      throw new Error(
-        `Failed to list loans: ${errorData.message || response.statusText}`
-      );
-    }
-
-    const json = await response.json();
-    const loansData = json.data;
+    const response = await withErrorHandling<{ data: unknown[] }>(
+      () => fetch(`${baseUrl}/users/${input.userId}/loans`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${this.token}`,
+          "Content-Type": "application/json",
+        },
+      }),
+      { operation: 'list loans', resource: 'your loans' }
+    );
 
     return {
-      loans: loansData,
+      loans: response.data,
     };
   }
 
@@ -69,33 +61,24 @@ export class HttpLoanService implements LoanService {
       );
     }
 
-    const response = await fetch(`${baseUrl}/products/${input.productId}/reserve`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${this.token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        returnDate: input.returnDate.toISOString(),
+    const response = await withErrorHandling<{ data: { message: string; product: unknown }; message?: string }>(
+      () => fetch(`${baseUrl}/products/${input.productId}/reserve`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${this.token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          returnDate: input.returnDate.toISOString(),
+        }),
       }),
-    });
+      { operation: 'reserve product', resource: 'this device' }
+    );
 
-    if (!response.ok) {
-      const errorData = await response
-        .json()
-        .catch(() => ({ message: response.statusText }));
-      throw new Error(
-        `Failed to create loan: ${errorData.message || response.statusText}`
-      );
-    }
-
-    const json = await response.json();
-
-    // The API Gateway wraps the response in { message, data: { message, product } }
-    const responseData = json.data;
+    const responseData = response.data;
     return {
       product: responseData.product,
-      message: responseData.message || json.message,
+      message: responseData.message || response.message,
     };
   }
 
@@ -110,29 +93,20 @@ export class HttpLoanService implements LoanService {
       );
     }
 
-    const response = await fetch(`${baseUrl}/loans/${input.loanId}/return`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${this.token}`,
-        "Content-Type": "application/json",
-      },
-    });
-
-    if (!response.ok) {
-      const errorData = await response
-        .json()
-        .catch(() => ({ message: response.statusText }));
-      throw new Error(
-        `Failed to return loan: ${errorData.message || response.statusText}`
-      );
-    }
-
-    const json = await response.json();
-    const loanData = json.data;
+    const response = await withErrorHandling<{ data: unknown }>(
+      () => fetch(`${baseUrl}/loans/${input.loanId}/return`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${this.token}`,
+          "Content-Type": "application/json",
+        },
+      }),
+      { operation: 'return loan', resource: 'this loan' }
+    );
 
     return {
       loan: {
-        ...loanData,
+        ...response.data,
       },
     };
   }
@@ -148,26 +122,19 @@ export class HttpLoanService implements LoanService {
       );
     }
 
-    const response = await fetch(`${baseUrl}/loans/status/pending-approval`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${this.token}`,
-        "Content-Type": "application/json",
-      },
-    });
+    const response = await withErrorHandling<{ data: unknown[] }>(
+      () => fetch(`${baseUrl}/loans/status/pending-approval`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${this.token}`,
+          "Content-Type": "application/json",
+        },
+      }),
+      { operation: 'list pending approvals', resource: 'pending loan approvals' }
+    );
 
-    if (!response.ok) {
-      const errorData = await response
-        .json()
-        .catch(() => ({ message: response.statusText }));
-      throw new Error(
-        `Failed to list pending approvals: ${errorData.message || response.statusText}`
-      );
-    }
-
-    const json = await response.json();
     return {
-      loans: json.data,
+      loans: response.data,
     };
   }
 
@@ -182,26 +149,19 @@ export class HttpLoanService implements LoanService {
       );
     }
 
-    const response = await fetch(`${baseUrl}/loans/status/active`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${this.token}`,
-        "Content-Type": "application/json",
-      },
-    });
+    const response = await withErrorHandling<{ data: unknown[] }>(
+      () => fetch(`${baseUrl}/loans/status/active`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${this.token}`,
+          "Content-Type": "application/json",
+        },
+      }),
+      { operation: 'list active loans', resource: 'active loans' }
+    );
 
-    if (!response.ok) {
-      const errorData = await response
-        .json()
-        .catch(() => ({ message: response.statusText }));
-      throw new Error(
-        `Failed to list active loans: ${errorData.message || response.statusText}`
-      );
-    }
-
-    const json = await response.json();
     return {
-      loans: json.data,
+      loans: response.data,
     };
   }
 
@@ -216,26 +176,19 @@ export class HttpLoanService implements LoanService {
       );
     }
 
-    const response = await fetch(`${baseUrl}/loans/${input.loanId}/approve`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${this.token}`,
-        "Content-Type": "application/json",
-      },
-    });
+    const response = await withErrorHandling<{ data: unknown }>(
+      () => fetch(`${baseUrl}/loans/${input.loanId}/approve`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${this.token}`,
+          "Content-Type": "application/json",
+        },
+      }),
+      { operation: 'approve loan', resource: 'this loan' }
+    );
 
-    if (!response.ok) {
-      const errorData = await response
-        .json()
-        .catch(() => ({ message: response.statusText }));
-      throw new Error(
-        `Failed to approve loan: ${errorData.message || response.statusText}`
-      );
-    }
-
-    const json = await response.json();
     return {
-      loan: json.data,
+      loan: response.data,
     };
   }
 
@@ -250,26 +203,19 @@ export class HttpLoanService implements LoanService {
       );
     }
 
-    const response = await fetch(`${baseUrl}/loans/${input.loanId}/reject`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${this.token}`,
-        "Content-Type": "application/json",
-      },
-    });
+    const response = await withErrorHandling<{ data: unknown }>(
+      () => fetch(`${baseUrl}/loans/${input.loanId}/reject`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${this.token}`,
+          "Content-Type": "application/json",
+        },
+      }),
+      { operation: 'reject loan', resource: 'this loan' }
+    );
 
-    if (!response.ok) {
-      const errorData = await response
-        .json()
-        .catch(() => ({ message: response.statusText }));
-      throw new Error(
-        `Failed to reject loan: ${errorData.message || response.statusText}`
-      );
-    }
-
-    const json = await response.json();
     return {
-      loan: json.data,
+      loan: response.data,
     };
   }
 }

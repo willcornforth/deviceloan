@@ -1,4 +1,5 @@
 import { ListProductOutput, ProductService } from "../app/product-service";
+import { withErrorHandling } from "./service-error-handler";
 
 export class HttpProductService implements ProductService {
 	constructor(private readonly token?: string) { }
@@ -21,16 +22,14 @@ export class HttpProductService implements ProductService {
 			headers['Authorization'] = `Bearer ${this.token}`;
 		}
 
-		const response = await fetch(`${baseUrl}/products`, {
-			method: 'GET',
-			headers,
-		});
-
-		if (!response.ok) {
-			throw new Error(`Failed to fetch products: ${response.statusText}`);
-		}
+		const response = await withErrorHandling<{ data: ListProductOutput }>(
+			() => fetch(`${baseUrl}/products`, {
+				method: 'GET',
+				headers,
+			}),
+			{ operation: 'list products', resource: 'products' }
+		);
 		
-		const json = await response.json();
-		return json.data;
+		return response.data;
 	}
 }
