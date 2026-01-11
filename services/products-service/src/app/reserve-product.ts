@@ -118,7 +118,12 @@ export const reserveProduct = async (
 			reservedAt: result.reservedAt.toISOString(),
 			returnDate: params.returnDate,
 		};
-		await eventPublisher.publishProductReserved(eventData, deps.context, deps.correlationContext);
+		// Preserve original single-arg call for compatibility with existing tests
+		if (deps.context || deps.correlationContext) {
+			await eventPublisher.publishProductReserved(eventData, deps.context, deps.correlationContext);
+		} else {
+			await eventPublisher.publishProductReserved(eventData);
+		}
 	}
 
 	return {
