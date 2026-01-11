@@ -90,11 +90,12 @@ export class HttpClient {
         }
 
         const url = `${this.baseUrl}${options.path}`;
+        const bodySize = options.body ? JSON.stringify(options.body).length : 0;
         
         if (attempt > 0) {
-          context.log(`${prefix}Retry attempt ${attempt}/${this.maxRetries} for ${options.method} ${url}`);
+          context.log(`${prefix}Retry attempt ${attempt}/${this.maxRetries} for ${options.method} ${url}${bodySize > 0 ? ` (body: ${bodySize} bytes)` : ''}`);
         } else {
-          context.log(`${prefix}${options.method} ${url}`);
+          context.log(`${prefix}${options.method} ${url}${bodySize > 0 ? ` (body: ${bodySize} bytes)` : ''}`);
         }
 
         const response = await fetch(url, {
@@ -106,7 +107,7 @@ export class HttpClient {
 
         if (!response.ok) {
           const errorText = await response.text().catch(() => 'Unknown error');
-          context.log(`${prefix}Service returned ${response.status}: ${errorText}`);
+          context.log(`${prefix}Unsuccessful response: ${response.status} in ${duration}ms (attempt ${attempt + 1}/${this.maxRetries + 1}): ${errorText}`);
           // Track failed dependency
           trackHttpDependency({
             name: options.path,
@@ -134,7 +135,7 @@ export class HttpClient {
 
           lastError = error;
           const backoffDelay = this.calculateBackoff(attempt);
-          context.log(`${prefix}Retryable error (${response.status}), backing off for ${Math.round(backoffDelay)}ms`);
+          context.log(`${prefix}Retrying request after ${response.status} error (attempt ${attempt + 1}/${this.maxRetries + 1}), backing off for ${Math.round(backoffDelay)}ms`);
           await this.delay(backoffDelay);
           continue;
         }
@@ -153,6 +154,10 @@ export class HttpClient {
             traceParent: options.correlationContext.traceParent ?? '',
           } : undefined,
         });
+
+        // Log successful response
+        const contentLength = response.headers.get('content-length');
+        context.log(`${prefix}${response.status} ${response.statusText} in ${duration}ms${contentLength ? ` (${contentLength} bytes)` : ''}`);
 
         // Handle empty responses (e.g., 204 No Content)
         if (response.status === 204 || response.headers.get('content-length') === '0') {
@@ -179,13 +184,13 @@ export class HttpClient {
 
         // If it's not retryable or we're out of retries, throw immediately
         if (!this.isRetryableError(error) || attempt === this.maxRetries) {
-          context.error(`Request failed after ${attempt + 1} attempt(s):`, error);
+          context.error(`${prefix}Request failed after ${attempt + 1} attempt(s): ${options.method} ${this.baseUrl}${options.path}`, error);
           throw error;
         }
 
         // Log and retry on network errors or retryable HTTP errors
         const backoffDelay = this.calculateBackoff(attempt);
-        context.log(`${prefix}Network error, backing off for ${Math.round(backoffDelay)}ms:`, error);
+        context.log(`${prefix}Retrying after network error (attempt ${attempt + 1}/${this.maxRetries + 1}), backing off for ${Math.round(backoffDelay)}ms:`, error);
         await this.delay(backoffDelay);
       }
     }
