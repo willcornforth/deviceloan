@@ -3,18 +3,23 @@ import {
   AzureKeyCredential,
 } from "@azure/eventgrid";
 import { InvocationContext } from "@azure/functions";
+import { CorrelationContext } from "./correlation-context";
 
 interface LoanEventData {
   id: string;
   userId: string;
   productId: string;
   dueDate: string;
+  _correlationId?: string;
+  _invocationId?: string;
 }
 
 interface LoanCreationFailedEventData {
   productId: string;
   userId: string;
   reason: string;
+  _correlationId?: string;
+  _invocationId?: string;
 }
 
 interface EventPublisherClient {
@@ -53,60 +58,84 @@ export class LoanEventPublisher {
 		this.client = client || new AzureEventGridPublisherClient(); // Default to EventGridPublisherClient
   }
 
-  async publishLoanApproved(loan: LoanEventData, context?: InvocationContext) {
-		context?.log(`Publishing Loan.Approved event for loan ID: ${loan.id}`);
+  async publishLoanApproved(
+    loan: LoanEventData, 
+    context?: InvocationContext,
+    correlationContext?: CorrelationContext
+  ) {
+		const logPrefix = correlationContext?.getLogPrefix() || '';
+		context?.log(`${logPrefix} Publishing Loan.Approved event for loan ID: ${loan.id}`);
 		
+    const eventData = {
+      id: loan.id,
+      userId: loan.userId,
+      productId: loan.productId,
+      dueDate: loan.dueDate,
+      _correlationId: correlationContext?.correlationId,
+      _invocationId: correlationContext?.invocationId,
+    };
+
     await this.client.send([
       {
         eventType: "Loan.Approved",
         subject: `loans/${loan.id}`,
         dataVersion: "1.0",
-        data: {
-          id: loan.id,
-          userId: loan.userId,
-          productId: loan.productId,
-          dueDate: loan.dueDate,
-        },
+        data: eventData,
       },
     ]);
   }
 
-	  async publishLoanReturned(loan: LoanEventData, context?: InvocationContext) {
-		context?.log(`Publishing Loan.Returned event for loan ID: ${loan.id}`);
+	  async publishLoanReturned(
+    loan: LoanEventData, 
+    context?: InvocationContext,
+    correlationContext?: CorrelationContext
+  ) {
+		const logPrefix = correlationContext?.getLogPrefix() || '';
+		context?.log(`${logPrefix} Publishing Loan.Returned event for loan ID: ${loan.id}`);
 		
+    const eventData = {
+      id: loan.id,
+      userId: loan.userId,
+      productId: loan.productId,
+      dueDate: loan.dueDate,
+      _correlationId: correlationContext?.correlationId,
+      _invocationId: correlationContext?.invocationId,
+    };
+
     await this.client.send([
       {
         eventType: "Loan.Returned",
         subject: `loans/${loan.id}`,
         dataVersion: "1.0",
-        data: {
-          id: loan.id,
-          userId: loan.userId,
-          productId: loan.productId,
-          dueDate: loan.dueDate,
-        },
+        data: eventData,
       },
     ]);
   }
 
   async publishLoanCreationFailed(
     data: LoanCreationFailedEventData,
-    context?: InvocationContext
+    context?: InvocationContext,
+    correlationContext?: CorrelationContext
   ) {
+    const logPrefix = correlationContext?.getLogPrefix() || '';
     context?.log(
-      `Publishing Loan.CreationFailed event for product ID: ${data.productId}`
+      `${logPrefix} Publishing Loan.CreationFailed event for product ID: ${data.productId}`
     );
+
+    const eventData = {
+      productId: data.productId,
+      userId: data.userId,
+      reason: data.reason,
+      _correlationId: correlationContext?.correlationId,
+      _invocationId: correlationContext?.invocationId,
+    };
 
     await this.client.send([
       {
         eventType: "Loan.CreationFailed",
         subject: `loans/failed/${data.productId}`,
         dataVersion: "1.0",
-        data: {
-          productId: data.productId,
-          userId: data.userId,
-          reason: data.reason,
-        },
+        data: eventData,
       },
     ]);
   }

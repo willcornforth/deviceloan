@@ -8,11 +8,21 @@ import { approveLoan } from "../app/approveLoan";
 import { getLoanRepo } from "../config/appServices";
 import { loanEventPublisher } from "../infra/eventgrid-loans-publisher";
 import { Loan } from "../domain/loan";
+import { CorrelationContext } from "../infra/correlation-context";
 
 async function handler(
 	request: HttpRequest,
 	context: InvocationContext
 ): Promise<HttpResponseInit> {
+	// Extract correlation context from request headers at the start
+	// Convert Headers object to Record<string, string | string[]> for compatibility
+	const headersRecord: Record<string, string | string[]> = {};
+	request.headers.forEach((value, key) => {
+		headersRecord[key] = value;
+	});
+	const correlationContext = CorrelationContext.fromContext(context, headersRecord);
+	const logPrefix = correlationContext.getLogPrefix();
+
 	try {
 		const id = request.params.id;
 
@@ -23,10 +33,10 @@ async function handler(
 			};
 		}
 
-		context.log(`Approving loan ${id}`);
+		context.log(`${logPrefix} Approving loan ${id}`);
 
 		const repo = getLoanRepo();
-		const result = await approveLoan(repo, loanEventPublisher)(id, context);
+		const result = await approveLoan(repo, loanEventPublisher)(id, context, correlationContext);
 
 		if (!result.success) {
 			const statusCode = result.error === "Loan not found" ? 404 : 400;
@@ -46,7 +56,7 @@ async function handler(
 				throw new Error("Approved loan data is missing");
 			}
 
-			console.log("About to publish Loan.Approved event for loan:", loan.id);
+			context.log(`${logPrefix} About to publish Loan.Approved event for loan: ${loan.id}`);
 			await loanEventPublisher.publishLoanApproved(
 				{
 					id: loan.id,
@@ -54,25 +64,27 @@ async function handler(
 					productId: loan.productId,
 					dueDate: loan.dueDate.toISOString(),
 				},
-				context
+				context,
+				correlationContext
 			);
-			console.log("Successfully published Loan.Approved event");
+			context.log(`${logPrefix} Successfully published Loan.Approved event`);
 		} catch (eventError) {
-			console.error("Failed to publish Loan.Approved event:", eventError);
+			context.error(`${logPrefix} Failed to publish Loan.Approved event:`, eventError);
 			// Don't fail the request if event publishing fails
 		}
 
-		context.log(`Loan ${id} approved successfully`);
+		context.log(`${logPrefix} Loan ${id} approved successfully`);
 
 		return {
 			status: 200,
 			jsonBody: {
 				message: "Loan approved successfully",
 				loan: result.loan,
+				correlationId: correlationContext.correlationId,
 			},
 		};
 	} catch (error) {
-		context.error("Error approving loan:", error);
+		context.error(`${correlationContext.getLogPrefix()} Error approving loan:`, error);
 		return {
 			status: 500,
 			jsonBody: { error: "Internal server error" },

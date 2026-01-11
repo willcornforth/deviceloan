@@ -2,6 +2,7 @@ import { Loan, LoanStatus } from "../domain/loan";
 import { LoanId, LoanRepo } from "../domain/loan-repo";
 import { LoanEventPublisher } from "../infra/eventgrid-loans-publisher";
 import { InvocationContext } from "@azure/functions";
+import { CorrelationContext } from "../infra/correlation-context";
 
 export interface ApproveLoanResult {
   success: boolean;
@@ -11,7 +12,12 @@ export interface ApproveLoanResult {
 
 export const approveLoan =
   (repo: LoanRepo, eventPublisher: LoanEventPublisher) =>
-  async (id: LoanId, context?: InvocationContext): Promise<ApproveLoanResult> => {
+  async (
+    id: LoanId,
+    context?: InvocationContext,
+    correlationContext?: CorrelationContext
+  ): Promise<ApproveLoanResult> => {
+    const logPrefix = correlationContext?.getLogPrefix() || '';
     const existingLoan = await repo.getById(id);
     
     if (!existingLoan) {
