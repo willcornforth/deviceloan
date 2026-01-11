@@ -58,13 +58,14 @@ export class LoanEventPublisher {
 		this.client = client || new AzureEventGridPublisherClient(); // Default to EventGridPublisherClient
   }
 
+
   async publishLoanApproved(
-    loan: LoanEventData, 
+    loan: LoanEventData,
     context?: InvocationContext,
     correlationContext?: CorrelationContext
   ) {
-		const logPrefix = correlationContext?.getLogPrefix() || '';
-		context?.log(`${logPrefix} Publishing Loan.Approved event for loan ID: ${loan.id}`);
+    const prefix = correlationContext ? `${correlationContext.getLogPrefix()} ` : '';
+    context?.log(`${prefix}Publishing Loan.Approved event for loan ID: ${loan.id}`);
 		
     const eventData = {
       id: loan.id,
@@ -85,13 +86,13 @@ export class LoanEventPublisher {
     ]);
   }
 
-	  async publishLoanReturned(
-    loan: LoanEventData, 
-    context?: InvocationContext,
-    correlationContext?: CorrelationContext
-  ) {
-		const logPrefix = correlationContext?.getLogPrefix() || '';
-		context?.log(`${logPrefix} Publishing Loan.Returned event for loan ID: ${loan.id}`);
+    async publishLoanReturned(
+      loan: LoanEventData,
+      context?: InvocationContext,
+      correlationContext?: CorrelationContext
+    ) {
+      const prefix = correlationContext ? `${correlationContext.getLogPrefix()} ` : '';
+      context?.log(`${prefix}Publishing Loan.Returned event for loan ID: ${loan.id}`);
 		
     const eventData = {
       id: loan.id,
@@ -117,9 +118,9 @@ export class LoanEventPublisher {
     context?: InvocationContext,
     correlationContext?: CorrelationContext
   ) {
-    const logPrefix = correlationContext?.getLogPrefix() || '';
+    const prefix = correlationContext ? `${correlationContext.getLogPrefix()} ` : '';
     context?.log(
-      `${logPrefix} Publishing Loan.CreationFailed event for product ID: ${data.productId}`
+      `${prefix}Publishing Loan.CreationFailed event for product ID: ${data.productId}`
     );
 
     const eventData = {
