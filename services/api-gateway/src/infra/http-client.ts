@@ -1,5 +1,6 @@
 import { InvocationContext } from '@azure/functions';
 import { CorrelationContext } from './correlation-context';
+import { trackHttpDependency } from './telemetry';
 
 /**
  * Configuration for HttpClient with retry support
@@ -70,7 +71,9 @@ export class HttpClient {
     let lastError: Error | null = null;
 
     for (let attempt = 0; attempt <= this.maxRetries; attempt++) {
+      const prefix = options.correlationContext ? `${options.correlationContext.getLogPrefix()} ` : '';
       try {
+        const start = Date.now();
         const headers: Record<string, string> = {
           'Content-Type': 'application/json',
           ...options.additionalHeaders,
@@ -87,7 +90,6 @@ export class HttpClient {
         }
 
         const url = `${this.baseUrl}${options.path}`;
-        const prefix = options.correlationContext ? `${options.correlationContext.getLogPrefix()} ` : '';
         
         if (attempt > 0) {
           context.log(`${prefix}Retry attempt ${attempt}/${this.maxRetries} for ${options.method} ${url}`);
@@ -100,10 +102,25 @@ export class HttpClient {
           headers,
           body: options.body ? JSON.stringify(options.body) : undefined,
         });
+        const duration = Date.now() - start;
 
         if (!response.ok) {
           const errorText = await response.text().catch(() => 'Unknown error');
-          context.log(`Service returned ${response.status}: ${errorText}`);
+          context.log(`${prefix}Service returned ${response.status}: ${errorText}`);
+          // Track failed dependency
+          trackHttpDependency({
+            name: options.path,
+            url,
+            method: options.method,
+            durationMs: duration,
+            resultCode: response.status,
+            success: false,
+            properties: options.correlationContext ? {
+              correlationId: options.correlationContext.correlationId,
+              invocationId: options.correlationContext.invocationId,
+              traceParent: options.correlationContext.traceParent ?? '',
+            } : undefined,
+          });
           
           const error = new HttpClientError(
             response.status,
@@ -117,10 +134,25 @@ export class HttpClient {
 
           lastError = error;
           const backoffDelay = this.calculateBackoff(attempt);
-          context.log(`Retryable error (${response.status}), backing off for ${Math.round(backoffDelay)}ms`);
+          context.log(`${prefix}Retryable error (${response.status}), backing off for ${Math.round(backoffDelay)}ms`);
           await this.delay(backoffDelay);
           continue;
         }
+
+        // Track successful dependency
+        trackHttpDependency({
+          name: options.path,
+          url,
+          method: options.method,
+          durationMs: duration,
+          resultCode: response.status,
+          success: true,
+          properties: options.correlationContext ? {
+            correlationId: options.correlationContext.correlationId,
+            invocationId: options.correlationContext.invocationId,
+            traceParent: options.correlationContext.traceParent ?? '',
+          } : undefined,
+        });
 
         // Handle empty responses (e.g., 204 No Content)
         if (response.status === 204 || response.headers.get('content-length') === '0') {
@@ -130,6 +162,20 @@ export class HttpClient {
         return response.json() as Promise<T>;
       } catch (error) {
         lastError = error as Error;
+        // Track dependency on thrown error (network etc.)
+        trackHttpDependency({
+          name: options.path,
+          url: `${this.baseUrl}${options.path}`,
+          method: options.method,
+          durationMs: 0,
+          resultCode: undefined,
+          success: false,
+          properties: options.correlationContext ? {
+            correlationId: options.correlationContext.correlationId,
+            invocationId: options.correlationContext.invocationId,
+            traceParent: options.correlationContext.traceParent ?? '',
+          } : undefined,
+        });
 
         // If it's not retryable or we're out of retries, throw immediately
         if (!this.isRetryableError(error) || attempt === this.maxRetries) {
@@ -139,7 +185,7 @@ export class HttpClient {
 
         // Log and retry on network errors or retryable HTTP errors
         const backoffDelay = this.calculateBackoff(attempt);
-        context.log(`Network error, backing off for ${Math.round(backoffDelay)}ms:`, error);
+        context.log(`${prefix}Network error, backing off for ${Math.round(backoffDelay)}ms:`, error);
         await this.delay(backoffDelay);
       }
     }
