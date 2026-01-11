@@ -42,7 +42,7 @@ export class CorrelationContext {
     return new CorrelationContext(
       correlationId,
       context.invocationId,
-      context.traceContext?.traceparent
+      context.traceContext?.traceParent
     );
   }
 
