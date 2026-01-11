@@ -26,11 +26,17 @@ export class CorrelationContext {
   static fromContext(context: InvocationContext, headers?: Record<string, string | string[]>): CorrelationContext {
     // Try to get correlation ID from request headers first
     let correlationId: string | undefined;
+    let traceParent: string | undefined = context.traceContext?.traceParent;
     
     if (headers) {
       const corrIdHeader = headers["x-correlation-id"];
       if (corrIdHeader) {
         correlationId = Array.isArray(corrIdHeader) ? corrIdHeader[0] : corrIdHeader;
+      }
+
+      const traceParentHeader = headers["traceparent"];
+      if (traceParentHeader) {
+        traceParent = Array.isArray(traceParentHeader) ? traceParentHeader[0] : traceParentHeader;
       }
     }
 
@@ -42,7 +48,7 @@ export class CorrelationContext {
     return new CorrelationContext(
       correlationId,
       context.invocationId,
-      context.traceContext?.traceParent
+      traceParent
     );
   }
 
