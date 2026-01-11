@@ -6,7 +6,7 @@ import {
 } from "@azure/functions";
 
 export async function health(
-  request: HttpRequest,
+  _request: HttpRequest,
   context: InvocationContext
 ): Promise<HttpResponseInit> {
   context.log("Health check requested");
