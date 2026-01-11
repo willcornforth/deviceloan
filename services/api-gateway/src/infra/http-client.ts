@@ -1,4 +1,5 @@
 import { InvocationContext } from '@azure/functions';
+import { CorrelationContext } from './correlation-context';
 
 /**
  * Configuration for HttpClient with retry support
@@ -25,6 +26,7 @@ export interface HttpClientOptions {
   path: string;
   body?: unknown;
   additionalHeaders?: Record<string, string>;
+  correlationContext?: CorrelationContext;
 }
 
 export class HttpClient {
@@ -74,6 +76,11 @@ export class HttpClient {
           ...options.additionalHeaders,
         };
 
+        // Add correlation context headers for tracing
+        if (options.correlationContext) {
+          Object.assign(headers, options.correlationContext.getHeaders());
+        }
+
         // Add host key for authenticated service-to-service calls
         if (this.hostKey) {
           headers['x-functions-key'] = this.hostKey;
@@ -82,9 +89,9 @@ export class HttpClient {
         const url = `${this.baseUrl}${options.path}`;
         
         if (attempt > 0) {
-          context.log(`Retry attempt ${attempt}/${this.maxRetries} for ${options.method} ${url}`);
+          context.log(`${options.correlationContext?.getLogPrefix() || ''} Retry attempt ${attempt}/${this.maxRetries} for ${options.method} ${url}`);
         } else {
-          context.log(`${options.method} ${url}`);
+          context.log(`${options.correlationContext?.getLogPrefix() || ''} ${options.method} ${url}`);
         }
 
         const response = await fetch(url, {
