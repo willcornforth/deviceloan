@@ -11,6 +11,7 @@ import CategoryFilter, { Category } from "../components/CategoryFilter";
 import DeviceCard from "../components/DeviceCard";
 import LoanDeviceModal from "../components/LoanDeviceModal";
 import LoanSuccessDialog from "../components/LoanSuccessDialog";
+import ErrorPage from "../components/ErrorPage";
 import { useProducts } from "../hooks/useProducts";
 import { useLoanService } from "../hooks/useLoanService";
 import { useNotificationService } from "../hooks/useNotificationService";
@@ -18,7 +19,7 @@ import { Product } from "../app/product-service";
 import { Loan } from "../domain/loans";
 
 function Devices() {
-  const { products: devices, loading, error } = useProducts();
+  const { products: devices, loading, error, refetch } = useProducts();
   const { isAuthenticated, loginWithRedirect } = useAuth0();
   const { getLoanService } = useLoanService();
   const { getNotificationService } = useNotificationService();
@@ -188,9 +189,12 @@ function Devices() {
 
   if (error) {
     return (
-      <div className="flex justify-center items-center min-h-screen text-red-600">
-        Error loading devices: {error.message}
-      </div>
+      <ErrorPage
+        title="Available Devices"
+        subtitle="Browse and reserve devices"
+        error={error}
+        onRetry={refetch}
+      />
     );
   }
 

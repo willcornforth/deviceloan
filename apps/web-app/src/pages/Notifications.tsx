@@ -3,6 +3,7 @@ import { useAuth0 } from "@auth0/auth0-react";
 import { BellIcon, TrashIcon } from "@heroicons/react/24/outline";
 import PageBanner from "../components/PageBanner";
 import TabSwitch from "../components/TabSwitch";
+import ErrorAlert from "../components/ErrorAlert";
 import { useNotificationService } from "../hooks/useNotificationService";
 import { NotificationPreference, Notification } from "../domain/notifications";
 import { useProducts } from "../hooks/useProducts";
@@ -15,7 +16,7 @@ function Notifications() {
   const [preferences, setPreferences] = useState<NotificationPreference[]>([]);
   const [history, setHistory] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<Error | null>(null);
   const [activeTab, setActiveTab] = useState<"preferences" | "history">("preferences");
 
   useEffect(() => {
@@ -43,7 +44,7 @@ function Notifications() {
       setHistory(historyData.notifications);
     } catch (err: any) {
       console.error("Failed to load notifications:", err);
-      setError(err.message || "Failed to load notifications");
+      setError(err instanceof Error ? err : new Error(err.message || "Failed to load notifications"));
     } finally {
       setLoading(false);
     }
@@ -58,7 +59,7 @@ function Notifications() {
       setPreferences(prev => prev.filter(pref => pref.productId !== productId));
     } catch (err: any) {
       console.error("Failed to unsubscribe:", err);
-      setError(err.message || "Failed to unsubscribe");
+      setError(err instanceof Error ? err : new Error(err.message || "Failed to unsubscribe"));
     }
   };
 
@@ -114,8 +115,13 @@ function Notifications() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {error && (
-          <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-            {error}
+          <div className="mb-6">
+            <ErrorAlert
+              error={error}
+              onDismiss={() => setError(null)}
+              onRetry={loadData}
+              title="Failed to Load Notifications"
+            />
           </div>
         )}
 

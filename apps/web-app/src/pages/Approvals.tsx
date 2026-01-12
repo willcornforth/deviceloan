@@ -4,6 +4,7 @@ import ApprovalCard from '../components/ApprovalCard';
 import ActiveLoanCard from '../components/ActiveLoanCard';
 import TabSwitch from '../components/TabSwitch';
 import GroupBox from '../components/GroupBox';
+import ErrorPage from '../components/ErrorPage';
 import { usePendingApprovals } from '../hooks/usePendingApprovals';
 import { useActiveLoans } from '../hooks/useActiveLoans';
 import { useLoanService } from '../hooks/useLoanService';
@@ -21,6 +22,7 @@ function Approvals() {
   // Show loading if either tab is still loading on initial load, or show specific tab loading after
   const loading = (pendingLoading && activeTab === 'pending') || (activeLoading && activeTab === 'active');
   const error = activeTab === 'pending' ? pendingError : activeError;
+  const refetch = activeTab === 'pending' ? refetchPending : refetchActive;
 
   const handleApprove = async (loanId: string) => {
     try {
@@ -107,15 +109,12 @@ function Approvals() {
 
   if (error) {
     return (
-      <div>
-        <PageBanner 
-          title="Loan Management" 
-          subtitle="Review and manage loan requests and active loans" 
-        />
-        <div className="flex justify-center items-center py-20 text-red-600">
-          Error loading data: {error.message}
-        </div>
-      </div>
+      <ErrorPage
+        title="Loan Management"
+        subtitle="Review and manage loan requests and active loans"
+        error={error}
+        onRetry={refetch}
+      />
     );
   }
 

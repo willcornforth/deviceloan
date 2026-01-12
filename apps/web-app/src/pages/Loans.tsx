@@ -2,15 +2,14 @@ import { useState } from 'react';
 import PageBanner from '../components/PageBanner';
 import TabSwitch from '../components/TabSwitch';
 import LoanCard from '../components/LoanCard';
+import ErrorPage from '../components/ErrorPage';
 import { useLoans } from '../hooks/useLoans';
 
 type TabType = 'pending' | 'active' | 'history';
 
-
-
 function Loans() {
   const [activeTab, setActiveTab] = useState<TabType>('pending');
-  const { activeLoans, pendingLoans, pastLoans, loading, error } = useLoans();
+  const { activeLoans, pendingLoans, pastLoans, loading, error, refetch } = useLoans();
 
   const formatDate = (date: Date | string): string => {
     const d = new Date(date);
@@ -37,15 +36,12 @@ function Loans() {
 
   if (error) {
     return (
-      <div>
-        <PageBanner 
-          title="My Loans" 
-          subtitle="Track your current and past device loans" 
-        />
-        <div className="flex justify-center items-center py-20 text-red-600">
-          Error loading loans: {error.message}
-        </div>
-      </div>
+      <ErrorPage
+        title="My Loans"
+        subtitle="Track your current and past device loans"
+        error={error}
+        onRetry={refetch}
+      />
     );
   }
 
