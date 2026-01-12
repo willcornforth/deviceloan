@@ -8,6 +8,7 @@ import { AuthMiddleware } from "../app/auth-middleware";
 import { ServiceConfig } from "../infra/service-config";
 import { ResponseBuilder } from "../app/response-builder";
 import { HttpClientError } from "../infra/http-client";
+import { CorrelationContext } from "../infra/correlation-context";
 
 export async function unsubscribeNotifications(
   request: HttpRequest,
@@ -44,10 +45,18 @@ export async function unsubscribeNotifications(
     // Get the notifications service client
     const notificationsService = ServiceConfig.getNotificationsService();
 
+    // Extract correlation context from request headers
+    const headers: Record<string, string | string[]> = {};
+    request.headers.forEach((value, key) => {
+      headers[key] = value;
+    });
+    const correlationContext = CorrelationContext.fromContext(context, headers);
+
     // Call the notifications service
     const response = await notificationsService.request({
       method: "DELETE",
       path: `/api/notifications/unsubscribe/${productId}?${queryParams.toString()}`,
+      correlationContext,
     }, context);
 
     return ResponseBuilder.success(
@@ -55,18 +64,24 @@ export async function unsubscribeNotifications(
       "Successfully unsubscribed from notifications"
     );
   } catch (error) {
-    context.log(`Error unsubscribing from notifications: ${error}`);
+    context.error(`Error unsubscribing from notifications: ${error}`);
 
     if (error instanceof HttpClientError) {
+      // HTTP error from service (4xx, 5xx after retries)
       if (error.statusCode === 404) {
         return ResponseBuilder.serviceError(404, "Subscription not found");
       } else if (error.statusCode === 400) {
         return ResponseBuilder.badRequest("Invalid unsubscribe request");
       }
+      return ResponseBuilder.serviceError(
+        error.statusCode,
+        "The notifications service is experiencing issues. Please try again later."
+      );
     }
 
-    return ResponseBuilder.internalError(
-      "Failed to unsubscribe from notifications"
+    // Network error after retries exhausted
+    return ResponseBuilder.serviceUnavailable(
+      "The notifications service is temporarily unavailable. Please try again in a few moments."
     );
   }
 }

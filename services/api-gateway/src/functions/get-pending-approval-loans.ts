@@ -9,6 +9,7 @@ import { ServiceConfig } from "../infra/service-config";
 import { ResponseBuilder } from "../app/response-builder";
 import { HttpClientError } from "../infra/http-client";
 import { getProductRepo } from "../config/app-services";
+import { CorrelationContext } from "../infra/correlation-context";
 
 export async function getPendingApprovalLoans(
 	request: HttpRequest,
@@ -39,11 +40,19 @@ export async function getPendingApprovalLoans(
 		// Get the loans service client
 		const loansService = ServiceConfig.getLoansService();
 
+		// Extract correlation context from request headers
+		const headers: Record<string, string | string[]> = {};
+		request.headers.forEach((value, key) => {
+			headers[key] = value;
+		});
+		const correlationContext = CorrelationContext.fromContext(context, headers);
+
 		// Call the loans service to get pending approval loans
 		const loans: any[] = await loansService.request(
 			{
 				method: "GET",
 				path: "/loans/status/pending-approval",
+				correlationContext,
 			},
 			context
 		);
@@ -72,12 +81,13 @@ export async function getPendingApprovalLoans(
 
 		return ResponseBuilder.success(loansWithProducts, "Pending approval loans retrieved successfully");
 	} catch (error) {
-		context.log(`Error in getPendingApprovalLoans: ${error}`);
+		context.error(`Error in getPendingApprovalLoans: ${error}`);
 
 		if (error instanceof HttpClientError) {
+			// HTTP error from service (4xx, 5xx after retries)
 			return ResponseBuilder.serviceError(
 				error.statusCode,
-				"Failed to retrieve pending approval loans from upstream service"
+				"The loans service is experiencing issues. Please try again later."
 			);
 		}
 
@@ -85,7 +95,10 @@ export async function getPendingApprovalLoans(
 			return ResponseBuilder.internalError(error.message);
 		}
 
-		return ResponseBuilder.badGateway("Unable to connect to loans service");
+		// Network error after retries exhausted
+		return ResponseBuilder.serviceUnavailable(
+			"The loans service is temporarily unavailable. Please try again in a few moments."
+		);
 	}
 }
 

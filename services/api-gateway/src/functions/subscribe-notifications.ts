@@ -8,6 +8,7 @@ import { AuthMiddleware } from "../app/auth-middleware";
 import { ServiceConfig } from "../infra/service-config";
 import { ResponseBuilder } from "../app/response-builder";
 import { HttpClientError } from "../infra/http-client";
+import { CorrelationContext } from "../infra/correlation-context";
 
 interface SubscribeRequest {
   productId: string;
@@ -59,11 +60,19 @@ export async function subscribeNotifications(
     // Get the notifications service client
     const notificationsService = ServiceConfig.getNotificationsService();
 
+    // Extract correlation context from request headers
+    const headers: Record<string, string | string[]> = {};
+    request.headers.forEach((value, key) => {
+      headers[key] = value;
+    });
+    const correlationContext = CorrelationContext.fromContext(context, headers);
+
     // Call the notifications service
     const response = await notificationsService.request({
       method: "POST",
       path: "/api/notifications/subscribe",
       body: payload,
+      correlationContext,
     }, context);
 
     return ResponseBuilder.success(
@@ -71,18 +80,24 @@ export async function subscribeNotifications(
       "Successfully subscribed to notifications"
     );
   } catch (error) {
-    context.log(`Error subscribing to notifications: ${error}`);
+    context.error(`Error subscribing to notifications: ${error}`);
 
     if (error instanceof HttpClientError) {
+      // HTTP error from service (4xx, 5xx after retries)
       if (error.statusCode === 400) {
         return ResponseBuilder.badRequest("Invalid subscription request");
       } else if (error.statusCode === 409) {
         return ResponseBuilder.serviceError(409, "Subscription already exists");
       }
+      return ResponseBuilder.serviceError(
+        error.statusCode,
+        "The notifications service is experiencing issues. Please try again later."
+      );
     }
 
-    return ResponseBuilder.internalError(
-      "Failed to subscribe to notifications"
+    // Network error after retries exhausted
+    return ResponseBuilder.serviceUnavailable(
+      "The notifications service is temporarily unavailable. Please try again in a few moments."
     );
   }
 }

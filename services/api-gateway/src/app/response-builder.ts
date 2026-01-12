@@ -80,4 +80,14 @@ export class ResponseBuilder {
       },
     };
   }
+
+  static serviceUnavailable(message: string = 'Service temporarily unavailable'): HttpResponseInit {
+    return {
+      status: 503,
+      jsonBody: {
+        error: 'Service Unavailable',
+        message,
+      },
+    };
+  }
 }

@@ -8,6 +8,7 @@ import { AuthMiddleware } from "../app/auth-middleware";
 import { ServiceConfig } from "../infra/service-config";
 import { ResponseBuilder } from "../app/response-builder";
 import { HttpClientError } from "../infra/http-client";
+import { CorrelationContext } from "../infra/correlation-context";
 
 interface ReserveProductRequest {
   returnDate: string;
@@ -74,6 +75,13 @@ export async function reserveProduct(
       returnDate: returnDate.toISOString(),
     };
 
+    // Extract correlation context from request headers
+    const headers: Record<string, string | string[]> = {};
+    request.headers.forEach((value, key) => {
+      headers[key] = value;
+    });
+    const correlationContext = CorrelationContext.fromContext(context, headers);
+
     // Get the products service client
     const productsService = ServiceConfig.getProductsService();
 
@@ -86,6 +94,7 @@ export async function reserveProduct(
         method: "POST",
         path: `/products/${productId}/reserve`,
         body: payload,
+        correlationContext,
       },
       context
     );
@@ -93,12 +102,19 @@ export async function reserveProduct(
     // Return the product reservation details
     return ResponseBuilder.success(result, "Product reserved successfully");
   } catch (error) {
-    context.log(`Error in reserveProduct: ${error}`);
+    context.error(`Error in reserveProduct: ${error}`);
 
     if (error instanceof HttpClientError) {
+      // HTTP error from service - pass through status and friendly message
+      if (error.statusCode === 409) {
+        return ResponseBuilder.serviceError(
+          409,
+          "This product is already reserved. Please try another device."
+        );
+      }
       return ResponseBuilder.serviceError(
         error.statusCode,
-        "Failed to reserve product in upstream service"
+        "The products service is experiencing issues. Please try again later."
       );
     }
 
@@ -106,7 +122,10 @@ export async function reserveProduct(
       return ResponseBuilder.internalError(error.message);
     }
 
-    return ResponseBuilder.badRequest(error.message || "Invalid request");
+    // Network error after retries exhausted
+    return ResponseBuilder.serviceUnavailable(
+      "The products service is temporarily unavailable. Please try again in a few moments."
+    );
   }
 }
 

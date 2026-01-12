@@ -8,6 +8,7 @@ import { AuthMiddleware } from "../app/auth-middleware";
 import { ServiceConfig } from "../infra/service-config";
 import { ResponseBuilder } from "../app/response-builder";
 import { HttpClientError } from "../infra/http-client";
+import { CorrelationContext } from "../infra/correlation-context";
 import { getProductRepo } from "../config/app-services";
 
 export async function getActiveLoans(
@@ -36,6 +37,13 @@ export async function getActiveLoans(
 
 		context.log(`User ${authContext.subject} is accessing active loans`);
 
+		// Extract correlation context from request headers
+		const headers: Record<string, string | string[]> = {};
+		request.headers.forEach((value, key) => {
+			headers[key] = value;
+		});
+		const correlationContext = CorrelationContext.fromContext(context, headers);
+
 		// Get the loans service client
 		const loansService = ServiceConfig.getLoansService();
 
@@ -44,6 +52,7 @@ export async function getActiveLoans(
 			{
 				method: "GET",
 				path: "/loans/status/active",
+				correlationContext,
 			},
 			context
 		);
@@ -71,12 +80,13 @@ export async function getActiveLoans(
 
 		return ResponseBuilder.success(loansWithProducts, "Active loans retrieved successfully");
 	} catch (error) {
-		context.log(`Error in getActiveLoans: ${error}`);
+		context.error(`Error in getActiveLoans: ${error}`);
 
 		if (error instanceof HttpClientError) {
+			// HTTP error from service (4xx, 5xx after retries)
 			return ResponseBuilder.serviceError(
 				error.statusCode,
-				"Failed to retrieve active loans from upstream service"
+				"The loans service is experiencing issues. Please try again later."
 			);
 		}
 
@@ -84,7 +94,10 @@ export async function getActiveLoans(
 			return ResponseBuilder.internalError(error.message);
 		}
 
-		return ResponseBuilder.badGateway("Unable to connect to loans service");
+		// Network error after retries exhausted
+		return ResponseBuilder.serviceUnavailable(
+			"The loans service is temporarily unavailable. Please try again in a few moments."
+		);
 	}
 }
 

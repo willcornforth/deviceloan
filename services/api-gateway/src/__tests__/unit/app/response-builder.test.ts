@@ -168,4 +168,27 @@ describe('ResponseBuilder', () => {
 			});
 		});
 	});
+
+	describe('serviceUnavailable', () => {
+		it('should create a 503 service unavailable response with default message', () => {
+			const response = ResponseBuilder.serviceUnavailable();
+
+			expect(response.status).toBe(503);
+			expect(response.jsonBody).toEqual({
+				error: 'Service Unavailable',
+				message: 'Service temporarily unavailable',
+			});
+		});
+
+		it('should use custom message when provided', () => {
+			const message = 'The loans service is temporarily unavailable. Please try again in a few moments.';
+			const response = ResponseBuilder.serviceUnavailable(message);
+
+			expect(response.status).toBe(503);
+			expect(response.jsonBody).toEqual({
+				error: 'Service Unavailable',
+				message,
+			});
+		});
+	});
 });

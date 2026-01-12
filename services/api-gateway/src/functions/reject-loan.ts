@@ -8,6 +8,7 @@ import { AuthMiddleware } from "../app/auth-middleware";
 import { ServiceConfig } from "../infra/service-config";
 import { ResponseBuilder } from "../app/response-builder";
 import { HttpClientError } from "../infra/http-client";
+import { CorrelationContext } from "../infra/correlation-context";
 
 export async function rejectLoan(
 	request: HttpRequest,
@@ -42,6 +43,13 @@ export async function rejectLoan(
 			return ResponseBuilder.forbidden("Only administrators can reject loans");
 		}
 
+		// Extract correlation context from request headers
+		const headers: Record<string, string | string[]> = {};
+		request.headers.forEach((value, key) => {
+			headers[key] = value;
+		});
+		const correlationContext = CorrelationContext.fromContext(context, headers);
+
 		// Get the loans service client
 		const loansService = ServiceConfig.getLoansService();
 
@@ -50,18 +58,20 @@ export async function rejectLoan(
 			{
 				method: "POST",
 				path: `/loans/${loanId}/reject`,
+				correlationContext,
 			},
 			context
 		);
 
 		return ResponseBuilder.success(result, "Loan rejected successfully");
 	} catch (error) {
-		context.log(`Error in rejectLoan: ${error}`);
+		context.error(`Error in rejectLoan: ${error}`);
 
 		if (error instanceof HttpClientError) {
+			// HTTP error from service (4xx, 5xx after retries)
 			return ResponseBuilder.serviceError(
 				error.statusCode,
-				"Failed to reject loan in upstream service"
+				"The loans service is experiencing issues. Please try again later."
 			);
 		}
 
@@ -69,7 +79,10 @@ export async function rejectLoan(
 			return ResponseBuilder.internalError(error.message);
 		}
 
-		return ResponseBuilder.badGateway("Unable to connect to loans service");
+		// Network error after retries exhausted
+		return ResponseBuilder.serviceUnavailable(
+			"The loans service is temporarily unavailable. Please try again in a few moments."
+		);
 	}
 }
 

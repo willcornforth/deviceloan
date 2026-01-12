@@ -8,6 +8,7 @@ import { AuthMiddleware } from "../app/auth-middleware";
 import { ServiceConfig } from "../infra/service-config";
 import { ResponseBuilder } from "../app/response-builder";
 import { HttpClientError } from "../infra/http-client";
+import { CorrelationContext } from "../infra/correlation-context";
 
 export async function getNotificationHistory(
   request: HttpRequest,
@@ -44,10 +45,18 @@ export async function getNotificationHistory(
     // Get the notifications service client
     const notificationsService = ServiceConfig.getNotificationsService();
 
+    // Extract correlation context from request headers
+    const headers: Record<string, string | string[]> = {};
+    request.headers.forEach((value, key) => {
+      headers[key] = value;
+    });
+    const correlationContext = CorrelationContext.fromContext(context, headers);
+
     // Call the notifications service
     const response = await notificationsService.request({
       method: "GET",
       path: `/api/notifications/history?${queryParams.toString()}`,
+      correlationContext,
     }, context);
 
     return ResponseBuilder.success(
@@ -55,18 +64,24 @@ export async function getNotificationHistory(
       "Notification history retrieved successfully"
     );
   } catch (error) {
-    context.log(`Error retrieving notification history: ${error}`);
+    context.error(`Error retrieving notification history: ${error}`);
 
     if (error instanceof HttpClientError) {
+      // HTTP error from service (4xx, 5xx after retries)
       if (error.statusCode === 404) {
         return ResponseBuilder.serviceError(404, "Notification history not found");
       } else if (error.statusCode === 400) {
         return ResponseBuilder.badRequest("Invalid request parameters");
       }
+      return ResponseBuilder.serviceError(
+        error.statusCode,
+        "The notifications service is experiencing issues. Please try again later."
+      );
     }
 
-    return ResponseBuilder.internalError(
-      "Failed to retrieve notification history"
+    // Network error after retries exhausted
+    return ResponseBuilder.serviceUnavailable(
+      "The notifications service is temporarily unavailable. Please try again in a few moments."
     );
   }
 }
