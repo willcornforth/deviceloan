@@ -1,0 +1,146 @@
+import { useState } from 'react';
+import PageBanner from '../components/PageBanner';
+import TabSwitch from '../components/TabSwitch';
+import LoanCard from '../components/LoanCard';
+import { useLoans } from '../hooks/useLoans';
+
+type TabType = 'pending' | 'active' | 'history';
+
+
+
+function Loans() {
+  const [activeTab, setActiveTab] = useState<TabType>('pending');
+  const { activeLoans, pendingLoans, pastLoans, loading, error } = useLoans();
+
+  const formatDate = (date: Date | string): string => {
+    const d = new Date(date);
+    return d.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  if (loading) {
+    return (
+      <div>
+        <PageBanner 
+          title="My Loans" 
+          subtitle="Track your current and past device loans" 
+        />
+        <div className="flex justify-center items-center py-20">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div>
+        <PageBanner 
+          title="My Loans" 
+          subtitle="Track your current and past device loans" 
+        />
+        <div className="flex justify-center items-center py-20 text-red-600">
+          Error loading loans: {error.message}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <PageBanner 
+        title="My Loans" 
+        subtitle="Track your current and past device loans" 
+      />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <TabSwitch
+          tabs={[
+            { id: 'pending', label: 'Pending', count: pendingLoans.length, badgeColor: 'yellow' },
+            { id: 'active', label: 'Active', count: activeLoans.length, badgeColor: 'green' },
+            { id: 'history', label: 'History', count: pastLoans.length, badgeColor: 'gray' }
+          ]}
+          activeTab={activeTab}
+          onTabChange={(tab) => setActiveTab(tab as TabType)}
+        />
+
+        {/* Pending Tab */}
+        {activeTab === 'pending' && (
+            pendingLoans.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-gray-500 text-lg">You have no loans awaiting approval.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {pendingLoans.map((loan) => (
+                  <LoanCard
+                    key={loan.id}
+                    image={`https://placehold.co/400x300/e0e7ff/4f46e5?text=${loan.product?.name ?? 'Name Unavailable'}`}
+                    device={loan.product?.name ?? 'Name Unavailable'}
+                    category={loan.product?.category ?? 'Category Unavailable'}
+                    loanDate={formatDate(loan.loanDate)}
+                    returnDate={formatDate(loan.dueDate)}
+                    status={loan.status}
+                    isActive={false}
+                  />
+                ))}
+              </div>
+            )
+          )}
+
+        {/* Active Tab */}
+        {activeTab === 'active' && (
+            activeLoans.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-gray-500 text-lg">You have no active loans.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {activeLoans.map((loan) => (
+                  <LoanCard
+                    key={loan.id}
+                    image={`https://placehold.co/400x300/e0e7ff/4f46e5?text=${loan.product?.name ?? 'Name Unavailable'}`}
+                    device={loan.product?.name ?? 'Name Unavailable'}
+                    category={loan.product?.category ?? 'Category Unavailable'}
+                    loanDate={formatDate(loan.loanDate)}
+                    returnDate={formatDate(loan.dueDate)}
+                    status={loan.status}
+                    isActive={false}
+                  />
+                ))}
+              </div>
+            )
+          )}
+
+        {/* History Tab */}
+        {activeTab === 'history' && (
+            pastLoans.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-gray-500 text-lg">You have no loan history.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {pastLoans.map((loan) => (
+                  <LoanCard
+                    key={loan.id}
+                    image={`https://placehold.co/400x300/e0e7ff/4f46e5?text=${loan.product?.name ?? 'Name Unavailable'}`}
+                    device={loan.product?.name ?? 'Name Unavailable'}
+                    category={loan.product?.category ?? 'Category Unavailable'}
+                    loanDate={formatDate(loan.loanDate)}
+                    returnDate={formatDate(loan.dueDate)}
+                    status={loan.status}
+                    isActive={false}
+                  />
+                ))}
+              </div>
+            )
+          )}
+      </div>
+    </div>
+  );
+}
+
+export default Loans;
