@@ -1,0 +1,84 @@
+import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
+import { UserService } from '../../application/services/UserService';
+import { CosmosDbUserRepository } from '../../infrastructure/repositories/CosmosDbUserRepository';
+import { CosmosDbConfig } from '../../infrastructure/config/CosmosDbConfig';
+import { Auth0Middleware } from '../middleware/Auth0Middleware';
+
+// Initialize dependencies
+const cosmosConfig: CosmosDbConfig = {
+  connectionString: process.env.COSMOS_DB_CONNECTION_STRING || '',
+  databaseName: process.env.COSMOS_DB_DATABASE_NAME || 'deviceloan',
+  containerName: process.env.COSMOS_DB_CONTAINER_NAME || 'users'
+};
+
+const userRepository = new CosmosDbUserRepository(cosmosConfig);
+const userService = new UserService(userRepository);
+
+const auth0Middleware = new Auth0Middleware({
+  domain: process.env.AUTH0_DOMAIN || '',
+  audience: process.env.AUTH0_AUDIENCE || ''
+});
+
+// Update User
+export async function updateUser(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+  try {
+    // Validate Auth0 token
+    const isValid = await auth0Middleware.validateToken(request, context);
+    if (!isValid) {
+      return {
+        status: 401,
+        jsonBody: { error: 'Unauthorized' }
+      };
+    }
+
+    const userId = request.params.id;
+    if (!userId) {
+      return {
+        status: 400,
+        jsonBody: { error: 'User ID is required' }
+      };
+    }
+
+    const body = await request.json() as any;
+    
+    if (!body.email || !body.firstName || !body.lastName) {
+      return {
+        status: 400,
+        jsonBody: { error: 'Missing required fields: email, firstName, lastName' }
+      };
+    }
+
+    const user = await userService.update(userId, {
+      email: body.email,
+      firstName: body.firstName,
+      lastName: body.lastName,
+      isActive: body.isActive !== undefined ? body.isActive : true
+    });
+
+    return {
+      status: 200,
+      jsonBody: user
+    };
+  } catch (error: any) {
+    context.error('Error updating user:', error);
+    
+    if (error.message.includes('not found')) {
+      return {
+        status: 404,
+        jsonBody: { error: error.message }
+      };
+    }
+    
+    return {
+      status: 500,
+      jsonBody: { error: 'Internal server error', message: error.message }
+    };
+  }
+}
+
+app.http('updateUser', {
+  methods: ['PUT'],
+  authLevel: 'anonymous',
+  route: 'users/{id}',
+  handler: updateUser
+});
